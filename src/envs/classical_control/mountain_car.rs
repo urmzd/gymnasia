@@ -1,8 +1,12 @@
-use std::{fmt::Debug, iter::zip};
+use std::fmt::Debug;
+#[cfg(feature = "sdl2")]
+use std::iter::zip;
 
 use derivative::Derivative;
 use derive_new::new;
+#[cfg(feature = "sdl2")]
 use na::{Point2, Rotation2};
+#[cfg(feature = "sdl2")]
 use nalgebra as na;
 use num_traits::Float;
 use ordered_float::{OrderedFloat, UniformOrdered};
@@ -15,6 +19,7 @@ use rand::{
     Rng,
 };
 use rand_pcg::Pcg64;
+#[cfg(feature = "sdl2")]
 use sdl2::{gfx::primitives::DrawRenderer, pixels::Color, rect::Point};
 use serde::Serialize;
 
@@ -23,15 +28,19 @@ use crate::{
     spaces::{self, BoxR, Discrete, Space},
     utils::{
         custom::{
-            screen::{Screen, ScreenGuiTransformations},
             structs::Metadata,
             traits::Sample,
             types::O64,
             util_fns::clip,
         },
-        renderer::{RenderMode, Renderer, Renders},
+        renderer::{RenderMode, Renders},
         seeding::rand_random,
     },
+};
+#[cfg(feature = "sdl2")]
+use crate::utils::{
+    custom::screen::{Screen, ScreenGuiTransformations},
+    renderer::Renderer,
 };
 
 /// An implementation of the classical reinforcment learning environment, mountain car.
@@ -79,38 +88,64 @@ pub struct MountainCarEnv {
     #[serde(skip_serializing)]
     #[derivative(Debug = "ignore")]
     rand_random: Pcg64,
+    #[cfg(feature = "sdl2")]
     screen: Screen,
+    #[cfg(feature = "sdl2")]
     renderer: Renderer,
 }
 
 impl Clone for MountainCarEnv {
     fn clone(&self) -> Self {
-        Self {
-            min_position: self.min_position,
-            max_position: self.max_position,
-            max_speed: self.max_speed,
-            goal_position: self.goal_position,
-            goal_velocity: self.goal_velocity,
-            force: self.force,
-            gravity: self.gravity,
-            render_mode: self.render_mode,
-            renderer: self.renderer.clone(),
-            screen: self.screen.clone(),
-            action_space: self.action_space.clone(),
-            observation_space: self.observation_space.clone(),
-            state: self.state,
-            rand_random: self.rand_random.clone(),
-            metadata: self.metadata.clone(),
+        #[cfg(feature = "sdl2")]
+        {
+            Self {
+                min_position: self.min_position,
+                max_position: self.max_position,
+                max_speed: self.max_speed,
+                goal_position: self.goal_position,
+                goal_velocity: self.goal_velocity,
+                force: self.force,
+                gravity: self.gravity,
+                render_mode: self.render_mode,
+                renderer: self.renderer.clone(),
+                screen: self.screen.clone(),
+                action_space: self.action_space.clone(),
+                observation_space: self.observation_space.clone(),
+                state: self.state,
+                rand_random: self.rand_random.clone(),
+                metadata: self.metadata.clone(),
+            }
+        }
+        #[cfg(not(feature = "sdl2"))]
+        {
+            Self {
+                min_position: self.min_position,
+                max_position: self.max_position,
+                max_speed: self.max_speed,
+                goal_position: self.goal_position,
+                goal_velocity: self.goal_velocity,
+                force: self.force,
+                gravity: self.gravity,
+                render_mode: self.render_mode,
+                action_space: self.action_space.clone(),
+                observation_space: self.observation_space.clone(),
+                state: self.state,
+                rand_random: self.rand_random.clone(),
+                metadata: self.metadata.clone(),
+            }
         }
     }
 }
 
+#[cfg(feature = "sdl2")]
 const MOUNTAIN_CAR_RENDER_MODES: &[RenderMode] = &[
     RenderMode::Human,
     RenderMode::RgbArray,
     RenderMode::SingleRgbArray,
     RenderMode::None,
 ];
+#[cfg(not(feature = "sdl2"))]
+const MOUNTAIN_CAR_RENDER_MODES: &[RenderMode] = &[RenderMode::None];
 
 impl Default for Metadata<MountainCarEnv> {
     fn default() -> Self {
@@ -197,6 +232,7 @@ impl From<MountainCarObservation> for Vec<f64> {
 }
 
 impl MountainCarEnv {
+    #[cfg(feature = "sdl2")]
     fn height(xs: &[O64]) -> Vec<O64> {
         Vec::from_iter(
             xs.iter()
@@ -204,6 +240,7 @@ impl MountainCarEnv {
         )
     }
 
+    #[cfg(feature = "sdl2")]
     fn render(
         mode: RenderMode,
         max_position: O64,
@@ -353,38 +390,64 @@ impl MountainCarEnv {
         let low = MountainCarObservation::new(min_position, -max_speed);
         let high = MountainCarObservation::new(max_position, max_speed);
 
-        let renderer = Renderer::new(render_mode, None, None);
-
         let state = MountainCarObservation::sample_between(&mut rng, None);
 
         let metadata = Metadata::default();
-        let screen = Screen::new(400, 600, "Mountain Car", metadata.render_fps, render_mode);
 
         let action_space = spaces::Discrete(3);
         let observation_space = spaces::BoxR::new(low, high);
 
-        Self {
-            min_position,
-            max_position,
-            max_speed,
-            goal_position,
-            goal_velocity,
+        #[cfg(feature = "sdl2")]
+        {
+            let renderer = Renderer::new(render_mode, None, None);
+            let screen = Screen::new(400, 600, "Mountain Car", metadata.render_fps, render_mode);
 
-            force,
-            gravity,
+            Self {
+                min_position,
+                max_position,
+                max_speed,
+                goal_position,
+                goal_velocity,
 
-            render_mode,
-            renderer,
+                force,
+                gravity,
 
-            action_space,
-            observation_space,
+                render_mode,
+                renderer,
 
-            state,
-            rand_random: rng,
+                action_space,
+                observation_space,
 
-            screen,
+                state,
+                rand_random: rng,
 
-            metadata,
+                screen,
+
+                metadata,
+            }
+        }
+        #[cfg(not(feature = "sdl2"))]
+        {
+            Self {
+                min_position,
+                max_position,
+                max_speed,
+                goal_position,
+                goal_velocity,
+
+                force,
+                gravity,
+
+                render_mode,
+
+                action_space,
+                observation_space,
+
+                state,
+                rand_random: rng,
+
+                metadata,
+            }
         }
     }
 }
@@ -435,29 +498,37 @@ impl Env for MountainCarEnv {
     }
 
     fn render(&mut self, mode: RenderMode) -> Renders {
-        let max_position = self.max_position;
-        let min_position = self.min_position;
-        let goal_position = self.goal_position;
-        let state = self.state;
-        let screen = &mut self.screen;
-        let metadata = &self.metadata;
+        #[cfg(feature = "sdl2")]
+        {
+            let max_position = self.max_position;
+            let min_position = self.min_position;
+            let goal_position = self.goal_position;
+            let state = self.state;
+            let screen = &mut self.screen;
+            let metadata = &self.metadata;
 
-        let render_fn = &mut |mode| {
-            Self::render(
-                mode,
-                max_position,
-                min_position,
-                goal_position,
-                state,
-                screen,
-                metadata,
-            )
-        };
+            let render_fn = &mut |mode| {
+                Self::render(
+                    mode,
+                    max_position,
+                    min_position,
+                    goal_position,
+                    state,
+                    screen,
+                    metadata,
+                )
+            };
 
-        if self.render_mode == RenderMode::None {
-            self.renderer.get_renders(render_fn)
-        } else {
-            render_fn(mode)
+            if self.render_mode == RenderMode::None {
+                self.renderer.get_renders(render_fn)
+            } else {
+                render_fn(mode)
+            }
+        }
+        #[cfg(not(feature = "sdl2"))]
+        {
+            let _ = mode;
+            Renders::None
         }
     }
 
@@ -472,26 +543,29 @@ impl Env for MountainCarEnv {
 
         self.state = MountainCarObservation::sample_between(&mut self.rand_random, options);
 
-        self.renderer.reset();
+        #[cfg(feature = "sdl2")]
+        {
+            self.renderer.reset();
 
-        let max_position = self.max_position;
-        let min_position = self.min_position;
-        let goal_position = self.goal_position;
-        let state = self.state;
-        let screen = &mut self.screen;
-        let metadata = &self.metadata;
+            let max_position = self.max_position;
+            let min_position = self.min_position;
+            let goal_position = self.goal_position;
+            let state = self.state;
+            let screen = &mut self.screen;
+            let metadata = &self.metadata;
 
-        self.renderer.render_step(&mut |mode| {
-            Self::render(
-                mode,
-                max_position,
-                min_position,
-                goal_position,
-                state,
-                screen,
-                metadata,
-            )
-        });
+            self.renderer.render_step(&mut |mode| {
+                Self::render(
+                    mode,
+                    max_position,
+                    min_position,
+                    goal_position,
+                    state,
+                    screen,
+                    metadata,
+                )
+            });
+        }
 
         if return_info {
             (self.state, Some(()))
@@ -501,6 +575,7 @@ impl Env for MountainCarEnv {
     }
 
     fn close(&mut self) {
+        #[cfg(feature = "sdl2")]
         self.screen.close();
     }
 }
