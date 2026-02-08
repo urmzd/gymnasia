@@ -1,4 +1,5 @@
 /// Holds the objects associating with rendering.
+#[cfg(feature = "sdl2")]
 pub mod screen;
 /// Holds structures commonly used.
 pub mod structs;

@@ -2,6 +2,7 @@ use std::{f64::consts::PI, ops::Neg};
 
 use derive_new::new;
 use log::warn;
+#[cfg(feature = "sdl2")]
 use nalgebra as na;
 use ordered_float::{Float, OrderedFloat, UniformOrdered};
 use rand::{
@@ -13,6 +14,7 @@ use rand::{
     Rng,
 };
 use rand_pcg::Pcg64;
+#[cfg(feature = "sdl2")]
 use sdl2::{
     gfx::primitives::DrawRenderer,
     pixels::{self, Color},
@@ -24,14 +26,18 @@ use crate::{
     spaces::{BoxR, Discrete, Space},
     utils::{
         custom::{
-            screen::{Screen, ScreenGuiTransformations},
             structs::Metadata,
             traits::Sample,
             types::O64,
         },
-        renderer::{RenderMode, Renderer, Renders},
+        renderer::{RenderMode, Renders},
         seeding::{self, rand_random},
     },
+};
+#[cfg(feature = "sdl2")]
+use crate::utils::{
+    custom::screen::{Screen, ScreenGuiTransformations},
+    renderer::Renderer,
 };
 
 /// An environment which implements the cart pole problem described in
@@ -80,7 +86,9 @@ pub struct CartPoleEnv {
     pub x_threshold: O64,
     /// The number of steps taken after the episode was terminated.
     pub steps_beyond_terminated: Option<usize>,
+    #[cfg(feature = "sdl2")]
     renderer: Renderer,
+    #[cfg(feature = "sdl2")]
     screen: Screen,
     #[serde(skip_serializing)]
     rand_random: Pcg64,
@@ -112,34 +120,58 @@ impl CartPoleEnv {
         let action_space = Discrete(2);
         let observation_space = BoxR::new(-high, high);
 
-        let renderer = Renderer::new(render_mode, None, None);
-
         let metadata = Metadata::default();
-        let screen = Screen::new(400, 600, "Cart Pole", metadata.render_fps, render_mode);
 
         let state = CartPoleObservation::sample_between(&mut rand_random, None);
 
         let steps_beyond_terminated = None;
 
-        Self {
-            gravity,
-            masscart,
-            masspole,
-            length,
-            force_mag,
-            tau,
-            kinematics_integrator,
-            theta_threshold_radians,
-            x_threshold,
-            action_space,
-            observation_space,
-            render_mode,
-            renderer,
-            screen,
-            state,
-            metadata,
-            rand_random,
-            steps_beyond_terminated,
+        #[cfg(feature = "sdl2")]
+        {
+            let renderer = Renderer::new(render_mode, None, None);
+            let screen = Screen::new(400, 600, "Cart Pole", metadata.render_fps, render_mode);
+
+            Self {
+                gravity,
+                masscart,
+                masspole,
+                length,
+                force_mag,
+                tau,
+                kinematics_integrator,
+                theta_threshold_radians,
+                x_threshold,
+                action_space,
+                observation_space,
+                render_mode,
+                renderer,
+                screen,
+                state,
+                metadata,
+                rand_random,
+                steps_beyond_terminated,
+            }
+        }
+        #[cfg(not(feature = "sdl2"))]
+        {
+            Self {
+                gravity,
+                masscart,
+                masspole,
+                length,
+                force_mag,
+                tau,
+                kinematics_integrator,
+                theta_threshold_radians,
+                x_threshold,
+                action_space,
+                observation_space,
+                render_mode,
+                state,
+                metadata,
+                rand_random,
+                steps_beyond_terminated,
+            }
         }
     }
 
@@ -151,6 +183,7 @@ impl CartPoleEnv {
         self.masspole + self.length
     }
 
+    #[cfg(feature = "sdl2")]
     fn render(
         mode: RenderMode,
         screen: &mut Screen,
@@ -262,7 +295,10 @@ impl CartPoleEnv {
     }
 }
 
+#[cfg(feature = "sdl2")]
 const CART_POLE_RENDER_MODES: &[RenderMode] = &[RenderMode::Human, RenderMode::RgbArray];
+#[cfg(not(feature = "sdl2"))]
+const CART_POLE_RENDER_MODES: &[RenderMode] = &[RenderMode::None];
 
 impl Default for Metadata<CartPoleEnv> {
     fn default() -> Self {
@@ -463,15 +499,18 @@ impl Env for CartPoleEnv {
             OrderedFloat(0.)
         };
 
-        let screen = &mut self.screen;
-        let metadata = &self.metadata;
-        let x_threshold = self.x_threshold;
-        let length = self.length;
-        let state = self.state;
+        #[cfg(feature = "sdl2")]
+        {
+            let screen = &mut self.screen;
+            let metadata = &self.metadata;
+            let x_threshold = self.x_threshold;
+            let length = self.length;
+            let state = self.state;
 
-        self.renderer.render_step(&mut |mode| {
-            Self::render(mode, screen, metadata, x_threshold, length, state)
-        });
+            self.renderer.render_step(&mut |mode| {
+                Self::render(mode, screen, metadata, x_threshold, length, state)
+            });
+        }
 
         ActionReward {
             observation: self.state,
@@ -493,20 +532,23 @@ impl Env for CartPoleEnv {
 
         self.state = CartPoleObservation::sample_between(&mut self.rand_random, options);
 
-        self.renderer.reset();
-
-        let screen = &mut self.screen;
-        let metadata = &self.metadata;
-        let x_threshold = self.x_threshold;
-        let length = self.length;
-        let state = self.state;
-
         self.steps_beyond_terminated = None;
 
-        self.renderer.reset();
-        self.renderer.render_step(&mut |mode| {
-            Self::render(mode, screen, metadata, x_threshold, length, state)
-        });
+        #[cfg(feature = "sdl2")]
+        {
+            self.renderer.reset();
+
+            let screen = &mut self.screen;
+            let metadata = &self.metadata;
+            let x_threshold = self.x_threshold;
+            let length = self.length;
+            let state = self.state;
+
+            self.renderer.reset();
+            self.renderer.render_step(&mut |mode| {
+                Self::render(mode, screen, metadata, x_threshold, length, state)
+            });
+        }
 
         if return_info {
             (self.state, Some(()))
@@ -515,23 +557,32 @@ impl Env for CartPoleEnv {
         }
     }
 
-    fn render(&mut self, mode: RenderMode) -> crate::utils::renderer::Renders {
-        let screen = &mut self.screen;
-        let metadata = &self.metadata;
-        let x_threshold = self.x_threshold;
-        let length = self.length;
-        let state = self.state;
+    fn render(&mut self, mode: RenderMode) -> Renders {
+        #[cfg(feature = "sdl2")]
+        {
+            let screen = &mut self.screen;
+            let metadata = &self.metadata;
+            let x_threshold = self.x_threshold;
+            let length = self.length;
+            let state = self.state;
 
-        let render_fn =
-            &mut |mode| Self::render(mode, screen, metadata, x_threshold, length, state);
-        if self.render_mode != RenderMode::None {
-            self.renderer.get_renders(render_fn)
-        } else {
-            render_fn(mode)
+            let render_fn =
+                &mut |mode| Self::render(mode, screen, metadata, x_threshold, length, state);
+            if self.render_mode != RenderMode::None {
+                self.renderer.get_renders(render_fn)
+            } else {
+                render_fn(mode)
+            }
+        }
+        #[cfg(not(feature = "sdl2"))]
+        {
+            let _ = mode;
+            Renders::None
         }
     }
 
     fn close(&mut self) {
+        #[cfg(feature = "sdl2")]
         self.screen.close();
     }
 }
