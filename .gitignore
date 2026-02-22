@@ -5,3 +5,9 @@ Cargo.lock
 .nvimlog
 .vscode
 mprocs.log
+.claude/
+.vscode/
+.env
+.env.*
+.DS_Store
+.idea/
