@@ -79,7 +79,7 @@ pub enum RenderColor {
 pub struct RenderFrame(pub Vec<Vec<RenderColor>>);
 
 /// A collection of various formats describing the type of content produced during a render.
-#[derive(PartialEq, PartialOrd, Debug, Clone, Copy, Serialize, Eq, Ord)]
+#[derive(PartialEq, PartialOrd, Debug, Clone, Copy, Serialize, Eq, Ord, Default)]
 pub enum RenderMode {
     /// Indicates that that renderer should be done through the terminal or an external display.
     Human,
@@ -93,13 +93,8 @@ pub enum RenderMode {
     /// environments current state
     Ansi,
     /// Indicates that renderer should be skipped.
+    #[default]
     None,
-}
-
-impl Default for RenderMode {
-    fn default() -> Self {
-        Self::None
-    }
 }
 
 impl RenderMode {
