@@ -35,26 +35,9 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - uses: urmzd/semantic-release@v1
-
-      - name: Run sr release
         id: sr
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -uo pipefail
-          set +e
-          JSON=$(sr release ${{ inputs.force && '--force' || '' }} | tail -1)
-          RC=${PIPESTATUS[0]}
-          set -e
-          if [ $RC -eq 0 ]; then
-            echo "released=true" >> "$GITHUB_OUTPUT"
-            echo "version=$(echo "$JSON" | jq -r '.version')" >> "$GITHUB_OUTPUT"
-          elif [ $RC -eq 2 ]; then
-            echo "No releasable commits — skipping release"
-            echo "released=false" >> "$GITHUB_OUTPUT"
-          else
-            exit $RC
-          fi
+        with:
+          force: ${{ inputs.force || false }}
 
     outputs:
       released: ${{ steps.sr.outputs.released }}
