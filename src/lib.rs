@@ -1,3 +1,4 @@
+#![warn(missing_docs, unused_crate_dependencies)]
 //! A rust implementation of OpenAI's Gym.
 
 /// Contains user-facing interfaces.

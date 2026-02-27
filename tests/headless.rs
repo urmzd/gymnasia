@@ -12,7 +12,7 @@ fn cartpole_headless_step_and_reset() {
     assert_eq!(obs_vec.len(), 4);
 
     let result = env.step(0);
-    assert!(!result.done || result.done); // valid bool
+    assert!(result.reward >= ordered_float::OrderedFloat(0.));
     let obs_vec: Vec<f64> = result.observation.into();
     assert_eq!(obs_vec.len(), 4);
 

@@ -292,7 +292,8 @@ impl CartPoleEnv {
 }
 
 #[cfg(feature = "sdl2")]
-const CART_POLE_RENDER_MODES: &[RenderMode] = &[RenderMode::Human, RenderMode::RgbArray];
+const CART_POLE_RENDER_MODES: &[RenderMode] =
+    &[RenderMode::Human, RenderMode::RgbArray, RenderMode::None];
 #[cfg(not(feature = "sdl2"))]
 const CART_POLE_RENDER_MODES: &[RenderMode] = &[RenderMode::None];
 
@@ -554,6 +555,9 @@ impl Env for CartPoleEnv {
     }
 
     fn render(&mut self, mode: RenderMode) -> Renders {
+        if mode == RenderMode::None {
+            return Renders::None;
+        }
         #[cfg(feature = "sdl2")]
         {
             let screen = &mut self.screen;
@@ -572,7 +576,6 @@ impl Env for CartPoleEnv {
         }
         #[cfg(not(feature = "sdl2"))]
         {
-            let _ = mode;
             Renders::None
         }
     }
