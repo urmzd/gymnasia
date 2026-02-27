@@ -1,5 +1,5 @@
 {
-  description = "Flake for gym-rs";
+  description = "Flake for gymnasia";
 
   inputs = {
     nixpks.url = "github:NixOS/nixpkgs/nixos-unstable";

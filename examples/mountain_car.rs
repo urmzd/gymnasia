@@ -1,4 +1,4 @@
-use gym_rs::{
+use gymnasia::{
     core::{ActionReward, Env},
     envs::classical_control::mountain_car::MountainCarEnv,
     utils::renderer::RenderMode,
