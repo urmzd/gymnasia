@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1 (2026-02-27)
+
+### Bug Fixes
+
+- **ci**: remove duplicate sr release call that skipped publish ([586f1fe](https://github.com/urmzd/gymnasia/commit/586f1fef4c37935572f680ee904c2f5996d765ac))
+
+### Miscellaneous
+
+- **release**: v1.0.0 [skip ci] ([9f9e62a](https://github.com/urmzd/gymnasia/commit/9f9e62ac7eb23d314bdf6f8951f52ce5378bffee))
+
+
 ## 1.0.0 (2026-02-27)
 
 
