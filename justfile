@@ -1,3 +1,12 @@
+# === SETUP ===
+
+# Initialize the project: install hooks and dependencies
+init: install _install-hooks
+
+# Install project dependencies (build to verify)
+install:
+    cargo fetch
+
 # === BUILD ===
 
 # Build with all features (default)
@@ -72,3 +81,21 @@ mountain-car:
 
 # Run all CI checks (fmt + lint + test + doc)
 check: fmt-check lint test doc
+
+# === INTERNAL ===
+
+[private]
+_install-hooks:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    hook=".git/hooks/pre-commit"
+    cat > "$hook" << 'HOOK'
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Running pre-commit checks..."
+    just fmt-check
+    just lint
+    just test
+    HOOK
+    chmod +x "$hook"
+    echo "Pre-commit hook installed."
