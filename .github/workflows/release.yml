@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Re-release the current tag (use when a previous release partially failed)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    name: Release
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - uses: urmzd/semantic-release@v1
+
+      - name: Run sr release
+        id: sr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -uo pipefail
+          set +e
+          JSON=$(sr release ${{ inputs.force && '--force' || '' }} | tail -1)
+          RC=${PIPESTATUS[0]}
+          set -e
+          if [ $RC -eq 0 ]; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "version=$(echo "$JSON" | jq -r '.version')" >> "$GITHUB_OUTPUT"
+          elif [ $RC -eq 2 ]; then
+            echo "No releasable commits — skipping release"
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          else
+            exit $RC
+          fi
+
+    outputs:
+      released: ${{ steps.sr.outputs.released }}
+      version: ${{ steps.sr.outputs.version }}
+
+  publish:
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Authenticate with crates.io
+        id: auth
+        uses: rust-lang/crates-io-auth-action@v1
+
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish --allow-dirty
