@@ -1,13 +1,24 @@
+# Build
 /target
-/.idea
-/.direnv
+
+# Dependencies
 Cargo.lock
-.nvimlog
-.vscode
-mprocs.log
-.claude/
+
+# Editor/IDE
+.idea/
 .vscode/
+.nvimlog
+
+# Environment
+.direnv
 .env
 .env.*
+
+# OS
 .DS_Store
-.idea/
+
+# Logs
+*.log
+
+# Claude
+.claude/
