@@ -2,6 +2,9 @@
 
 ## 1.0.0 (2026-02-27)
 
+
+## 1.0.0 (2026-02-27)
+
 ### Breaking Changes
 
 - rebrand gym-rs to gymnasia v1.0.0 ([9fc4b9e](https://github.com/urmzd/gymnasia/commit/9fc4b9e111632dc7b14dbcfe07566cf93bbb93b1))
