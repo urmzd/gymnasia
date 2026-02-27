@@ -1,4 +1,4 @@
-use gym_rs::{
+use gymnasia::{
     core::Env, envs::classical_control::cartpole::CartPoleEnv, utils::renderer::RenderMode,
 };
 use ordered_float::OrderedFloat;

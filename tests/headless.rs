@@ -1,4 +1,4 @@
-use gym_rs::{
+use gymnasia::{
     core::Env,
     envs::classical_control::{cartpole::CartPoleEnv, mountain_car::MountainCarEnv},
     utils::renderer::{RenderMode, Renders},

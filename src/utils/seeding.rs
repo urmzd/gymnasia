@@ -9,7 +9,7 @@ use rand_pcg::Pcg64;
 /// # Examples
 ///
 /// ```rust
-/// use gym_rs::utils::seeding::rand_random;
+/// use gymnasia::utils::seeding::rand_random;
 ///
 /// // Generates a PRNG using a random seed derived from the OS.
 /// rand_random(None);
