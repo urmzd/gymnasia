@@ -23,24 +23,19 @@ use rand_pcg::Pcg64;
 use sdl2::{gfx::primitives::DrawRenderer, pixels::Color, rect::Point};
 use serde::Serialize;
 
-use crate::{
-    core::{ActionReward, Env, EnvProperties},
-    spaces::{self, BoxR, Discrete, Space},
-    utils::{
-        custom::{
-            structs::Metadata,
-            traits::Sample,
-            types::O64,
-            util_fns::clip,
-        },
-        renderer::{RenderMode, Renders},
-        seeding::rand_random,
-    },
-};
 #[cfg(feature = "sdl2")]
 use crate::utils::{
     custom::screen::{Screen, ScreenGuiTransformations},
     renderer::Renderer,
+};
+use crate::{
+    core::{ActionReward, Env, EnvProperties},
+    spaces::{self, BoxR, Discrete, Space},
+    utils::{
+        custom::{structs::Metadata, traits::Sample, types::O64, util_fns::clip},
+        renderer::{RenderMode, Renders},
+        seeding::rand_random,
+    },
 };
 
 /// An implementation of the classical reinforcment learning environment, mountain car.

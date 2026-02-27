@@ -21,23 +21,19 @@ use sdl2::{
 };
 use serde::Serialize;
 
-use crate::{
-    core::{ActionReward, Env, EnvProperties},
-    spaces::{BoxR, Discrete, Space},
-    utils::{
-        custom::{
-            structs::Metadata,
-            traits::Sample,
-            types::O64,
-        },
-        renderer::{RenderMode, Renders},
-        seeding::{self, rand_random},
-    },
-};
 #[cfg(feature = "sdl2")]
 use crate::utils::{
     custom::screen::{Screen, ScreenGuiTransformations},
     renderer::Renderer,
+};
+use crate::{
+    core::{ActionReward, Env, EnvProperties},
+    spaces::{BoxR, Discrete, Space},
+    utils::{
+        custom::{structs::Metadata, traits::Sample, types::O64},
+        renderer::{RenderMode, Renders},
+        seeding::{self, rand_random},
+    },
 };
 
 /// An environment which implements the cart pole problem described in
