@@ -1,0 +1,11 @@
+[output]
+dir = "./showcase"
+formats = ["png"]
+
+[[scenes]]
+type = "terminal"
+command = "cargo run --example=cartpole_headless --no-default-features 2>&1"
+name = "cartpole-headless"
+theme = "dracula"
+cols = 100
+maxLines = 40
