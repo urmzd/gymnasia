@@ -1,6 +1,19 @@
-# Gymnasia
+<p align="center">
+  <h1 align="center">gymnasia</h1>
+  <p align="center">
+    OpenAI Gymnasium environments in pure Rust.
+    <br /><br />
+    <a href="https://github.com/urmzd/gymnasia/releases">Install</a>
+    &middot;
+    <a href="https://github.com/urmzd/gymnasia/issues">Report Bug</a>
+    &middot;
+    <a href="https://crates.io/crates/gymnasia">Crates.io</a>
+  </p>
+</p>
 
-OpenAI Gymnasium environments in pure Rust.
+<p align="center">
+  <a href="https://github.com/urmzd/gymnasia/actions/workflows/ci.yml"><img src="https://github.com/urmzd/gymnasia/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+</p>
 
 ## Quick Start
 
@@ -48,6 +61,12 @@ cargo run --example=cartpole_headless --no-default-features
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+## Agent Skill
+
+```bash
+npx skills add urmzd/gymnasia
+```
 
 ## License
 

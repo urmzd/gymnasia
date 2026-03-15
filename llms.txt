@@ -1,0 +1,22 @@
+# Gymnasia
+
+> OpenAI Gymnasium environments implemented in pure Rust. Provides CartPole and MountainCar classical control environments with an optional SDL2 rendering backend. Designed as a drop-in Rust alternative to OpenAI Gym for reinforcement learning research and experimentation.
+
+## Docs
+
+- [README](https://github.com/urmzd/gymnasia/blob/main/README.md): Installation, usage, and examples
+- [AGENTS.md](https://github.com/urmzd/gymnasia/blob/main/AGENTS.md): Architecture and development guide
+- [CHANGELOG](https://github.com/urmzd/gymnasia/blob/main/CHANGELOG.md): Version history
+- [USAGE](https://github.com/urmzd/gymnasia/blob/main/USAGE.md): Detailed setup instructions
+
+## API / Key Files
+
+- [src/core.rs](https://github.com/urmzd/gymnasia/blob/main/src/core.rs): `Env` and `EnvProperties` traits, `ActionReward` type
+- [src/envs/classical_control/cartpole.rs](https://github.com/urmzd/gymnasia/blob/main/src/envs/classical_control/cartpole.rs): CartPole environment
+- [src/envs/classical_control/mountain_car.rs](https://github.com/urmzd/gymnasia/blob/main/src/envs/classical_control/mountain_car.rs): MountainCar environment
+- [src/spaces/](https://github.com/urmzd/gymnasia/blob/main/src/spaces/): Discrete and continuous observation/action spaces
+
+## Optional
+
+- [CONTRIBUTING](https://github.com/urmzd/gymnasia/blob/main/CONTRIBUTING.md): How to contribute
+- [Skill](https://github.com/urmzd/gymnasia/blob/main/skills/gymnasia/SKILL.md): Agent skill
