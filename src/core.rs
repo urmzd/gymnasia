@@ -13,6 +13,7 @@ use crate::{
 };
 
 /// Defines the range of values that can be outputted by a given environment.
+#[allow(deprecated)]
 const DEFAULT_REWARD_RANGE: &RewardRange = &(RewardRange {
     lower_bound: OrderedFloat(f64::NEG_INFINITY),
     upper_bound: OrderedFloat(f64::INFINITY),
@@ -54,6 +55,28 @@ where
 
     /// Closes any open resources associated with the internal rendering service.
     fn close(&mut self);
+
+    /// Resets the environment and always returns info alongside the observation.
+    fn reset_with_info(
+        &mut self,
+        seed: Option<u64>,
+        options: Option<BoxR<Self::Observation>>,
+    ) -> (Self::Observation, Self::ResetInfo)
+    where
+        Self::ResetInfo: Default,
+    {
+        let (obs, info) = self.reset(seed, true, options);
+        (obs, info.unwrap_or_default())
+    }
+
+    /// Renders using the environment's configured render mode.
+    fn render_current(&mut self) -> Renders
+    where
+        Self: EnvProperties,
+    {
+        let mode = *self.render_mode();
+        self.render(mode)
+    }
 }
 
 /// Defines a set of properties that should be accessible in all environments.
@@ -78,6 +101,11 @@ where
     }
 
     /// Provides the range of reward values that can be outputted by this environment.
+    #[deprecated(
+        since = "1.1.0",
+        note = "Gymnasium v1.x no longer uses reward_range. Will be removed in a future version."
+    )]
+    #[allow(deprecated)]
     fn reward_range(&self) -> &RewardRange {
         DEFAULT_REWARD_RANGE
     }
@@ -98,7 +126,10 @@ pub struct ActionReward<T, E> {
     /// The value of the reward produced.
     pub reward: O64,
     /// Indicates whether the episode has terminated or not.
+    #[deprecated(since = "1.1.0", note = "Use `terminated` instead")]
     pub done: bool,
+    /// Indicates whether the episode has terminated (reached a terminal state) or not.
+    pub terminated: bool,
     /// Indicates whether the episode has termianted early or  not.
     pub truncated: bool,
     /// Additional info implementations may provide for purposes beyond classical RL.
@@ -106,6 +137,10 @@ pub struct ActionReward<T, E> {
 }
 
 /// Defines the bounds for the reward value that can be observed.
+#[deprecated(
+    since = "1.1.0",
+    note = "Gymnasium v1.x no longer uses reward_range. Will be removed in a future version."
+)]
 #[derive(Clone, Debug, Serialize, PartialEq, Ord, PartialOrd, Eq)]
 pub struct RewardRange {
     /// The smallest possible reward that can be observed.
@@ -115,6 +150,7 @@ pub struct RewardRange {
 }
 
 /// Implement a default reward range.
+#[allow(deprecated)]
 impl Default for RewardRange {
     fn default() -> Self {
         DEFAULT_REWARD_RANGE.clone()

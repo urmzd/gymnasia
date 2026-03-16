@@ -1,6 +1,7 @@
+use rand::{distributions::Uniform, prelude::Distribution, Rng};
 use serde::Serialize;
 
-use super::Space;
+use super::{discrete_range::DiscreteRange, sample_space::SampleSpace, Space};
 
 /// Defines a set of discrete integers starting at 0.
 ///
@@ -11,10 +12,37 @@ use super::Space;
 #[derive(Debug, Serialize, PartialEq, PartialOrd, Eq, Ord, Clone)]
 pub struct Discrete(pub usize);
 
+impl Discrete {
+    /// Creates a [`DiscreteRange`] with `n` elements starting at `start`.
+    ///
+    /// This bridges to the Gymnasium v1.x `Discrete(n, start=...)` constructor.
+    pub fn with_start(n: usize, start: isize) -> DiscreteRange {
+        DiscreteRange::new(n, start)
+    }
+}
+
 impl Space<usize> for Discrete {
     fn contains(&self, value: usize) -> bool {
         match *self {
             Discrete(upper_bound) => value < upper_bound,
+        }
+    }
+}
+
+impl SampleSpace<usize> for Discrete {
+    type Mask = Vec<bool>;
+
+    fn sample<R: Rng>(&self, rng: &mut R, mask: Option<&Self::Mask>) -> usize {
+        let Discrete(n) = *self;
+        if let Some(mask) = mask {
+            let valid: Vec<usize> = (0..n)
+                .filter(|&i| mask.get(i).copied().unwrap_or(false))
+                .collect();
+            assert!(!valid.is_empty(), "mask must allow at least one action");
+            let idx = Uniform::new(0, valid.len()).sample(rng);
+            valid[idx]
+        } else {
+            Uniform::new(0, n).sample(rng)
         }
     }
 }
