@@ -509,10 +509,12 @@ impl Env for CartPoleEnv {
             });
         }
 
+        #[allow(deprecated)]
         ActionReward {
             observation: self.state,
             reward,
             done,
+            terminated: done,
             truncated: false,
             info: Some(()),
         }

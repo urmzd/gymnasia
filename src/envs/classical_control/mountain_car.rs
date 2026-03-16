@@ -483,10 +483,12 @@ impl Env for MountainCarEnv {
         self.state = MountainCarObservation { position, velocity };
         self.render(self.render_mode);
 
+        #[allow(deprecated)]
         ActionReward {
             observation: self.state,
             reward,
             done,
+            terminated: done,
             truncated: false,
             info: None,
         }
