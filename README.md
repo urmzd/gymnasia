@@ -33,17 +33,24 @@ See [USAGE.md](./USAGE.md) for detailed setup instructions across different oper
 
 ## Examples
 
-### With rendering (requires SDL2)
-
-```bash
-cargo run --example=cartpole
-```
-![cartpole](assets/cartpole.png)
-
-```bash
-cargo run --example=mountain_car
-```
-![mountain_car](assets/mountain_car.png)
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="assets/cartpole.png" alt="CartPole" width="400" />
+      <br />
+      <sub><b>CartPole</b></sub>
+      <br />
+      <code>cargo run --example=cartpole</code>
+    </td>
+    <td align="center">
+      <img src="assets/mountain_car.png" alt="MountainCar" width="400" />
+      <br />
+      <sub><b>MountainCar</b></sub>
+      <br />
+      <code>cargo run --example=mountain_car</code>
+    </td>
+  </tr>
+</table>
 
 ### Headless
 
