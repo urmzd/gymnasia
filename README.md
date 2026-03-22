@@ -15,6 +15,12 @@
   <a href="https://github.com/urmzd/gymnasia/actions/workflows/ci.yml"><img src="https://github.com/urmzd/gymnasia/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
+## Showcase
+
+<p align="center">
+  <img src="showcase/cartpole-headless.png" alt="CartPole headless demo" width="600">
+</p>
+
 ## Quick Start
 
 ```toml
