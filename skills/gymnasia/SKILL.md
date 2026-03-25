@@ -1,8 +1,9 @@
+---
+name: gymnasia
+description: Work with the gymnasia crate -- a pure-Rust implementation of OpenAI Gymnasium environments for reinforcement learning. Use when implementing RL environments in Rust, adding classical control environments, debugging SDL2 rendering, or working with action/observation spaces.
+---
+
 # Skill: gymnasia
-
-## Description
-
-Work with the gymnasia crate -- a pure-Rust implementation of OpenAI Gymnasium environments for reinforcement learning.
 
 ## When to Use
 
