@@ -34,7 +34,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - uses: urmzd/semantic-release@v1
+      - uses: urmzd/sr@v2
         id: sr
         with:
           force: ${{ inputs.force || false }}
