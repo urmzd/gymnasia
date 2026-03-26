@@ -77,9 +77,7 @@ Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelin
 
 ## Agent Skill
 
-```bash
-npx skills add urmzd/gymnasia
-```
+This repo's conventions are available as portable agent skills in [`skills/`](skills/).
 
 ## License
 
