@@ -17,7 +17,7 @@ rows = 40
 
 [[scenes.interactions]]
 type = "type"
-text = "RUSTUP_HOME=/Users/urmzd/.rustup CARGO_HOME=/Users/urmzd/.cargo /Users/urmzd/.cargo/bin/cargo run --example=cartpole_headless --no-default-features 2>&1"
+text = "cargo run --example=cartpole_headless --no-default-features 2>&1"
 speed = 50
 [[scenes.interactions]]
 type = "key"
