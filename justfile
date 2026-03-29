@@ -82,6 +82,13 @@ mountain-car:
 # Run all CI checks (fmt + lint + test + doc)
 check: fmt-check lint test doc
 
+# Full CI gate (fmt + lint + build + test)
+ci: fmt-check lint build test
+
+# Record showcase with teasr
+record:
+    teasr showme
+
 # === INTERNAL ===
 
 [private]
