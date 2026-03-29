@@ -22,6 +22,7 @@ types:
   - name: docs
     section: Documentation
   - name: refactor
+    bump: patch
     section: Refactoring
   - name: revert
     section: Reverts
@@ -37,4 +38,4 @@ version_files:
 changelog:
   file: CHANGELOG.md
 
-floating_tags: false
+floating_tags: true
