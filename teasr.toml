@@ -25,3 +25,31 @@ key = "enter"
 [[scenes.interactions]]
 type = "wait"
 duration = 60000
+
+[[scenes]]
+type = "screen"
+name = "cartpole"
+setup = "cargo run --example=cartpole &"
+delay = 5000
+theme = "dracula"
+title = "CartPole"
+
+[[scenes.interactions]]
+type = "wait"
+duration = 2000
+[[scenes.interactions]]
+type = "snapshot"
+
+[[scenes]]
+type = "screen"
+name = "mountain-car"
+setup = "cargo run --example=mountain_car &"
+delay = 5000
+theme = "dracula"
+title = "MountainCar"
+
+[[scenes.interactions]]
+type = "wait"
+duration = 2000
+[[scenes.interactions]]
+type = "snapshot"

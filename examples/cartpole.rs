@@ -1,12 +1,16 @@
 use gymnasia::{
-    core::Env, envs::classical_control::cartpole::CartPoleEnv, utils::renderer::RenderMode,
+    core::Env, envs::classical_control::cartpole::CartPoleEnv, render::RenderEnv,
+    utils::renderer::RenderMode,
 };
+use macroquad::prelude::*;
 use ordered_float::OrderedFloat;
 use rand::{thread_rng, Rng};
 
-fn main() {
-    let mut env = CartPoleEnv::new(RenderMode::Human);
-    env.reset(None, false, None);
+#[macroquad::main("CartPole")]
+async fn main() {
+    let env = CartPoleEnv::new();
+    let mut renv = RenderEnv::new(env, RenderMode::Human);
+    renv.reset(None, false, None);
 
     const N: usize = 15;
     let mut rewards = Vec::with_capacity(N);
@@ -17,15 +21,17 @@ fn main() {
 
         for _ in 0..475 {
             let action = rng.gen_range(0..=1);
-            let state_reward = env.step(action);
+            let state_reward = renv.step(action);
             current_reward += state_reward.reward;
 
-            if state_reward.done {
+            next_frame().await;
+
+            if state_reward.terminated {
                 break;
             }
         }
 
-        env.reset(None, false, None);
+        renv.reset(None, false, None);
         rewards.push(current_reward);
     }
 

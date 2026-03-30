@@ -1,15 +1,13 @@
-use gymnasia::{
-    core::Env, envs::classical_control::cartpole::CartPoleEnv, utils::renderer::RenderMode,
-};
+use gymnasia::{core::Env, envs::classical_control::cartpole::CartPoleEnv};
 use ordered_float::OrderedFloat;
 use rand::{thread_rng, Rng};
 
-/// Runs cartpole training in headless mode (no SDL2 rendering).
+/// Runs cartpole training in headless mode (no rendering).
 ///
-/// This example works with `default-features = false`, demonstrating
-/// that the core simulation does not require SDL2.
+/// This example works without the `render` feature, demonstrating
+/// that the core simulation has zero graphics dependencies.
 fn main() {
-    let mut env = CartPoleEnv::new(RenderMode::None);
+    let mut env = CartPoleEnv::new();
     env.reset(None, false, None);
 
     const N: usize = 15;
@@ -24,7 +22,7 @@ fn main() {
             let state_reward = env.step(action);
             current_reward += state_reward.reward;
 
-            if state_reward.done {
+            if state_reward.terminated {
                 break;
             }
         }
