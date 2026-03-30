@@ -18,9 +18,25 @@
 
 ## Showcase
 
-<p align="center">
-  <img src="showcase/cartpole-headless.png" alt="CartPole headless demo" width="600">
-</p>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="showcase/cartpole.gif" alt="CartPole" width="300" />
+      <br />
+      <sub><b>CartPole</b></sub>
+    </td>
+    <td align="center">
+      <img src="showcase/mountain-car.gif" alt="MountainCar" width="300" />
+      <br />
+      <sub><b>MountainCar</b></sub>
+    </td>
+    <td align="center">
+      <img src="showcase/cartpole-headless.gif" alt="CartPole (headless)" width="300" />
+      <br />
+      <sub><b>CartPole (headless)</b></sub>
+    </td>
+  </tr>
+</table>
 
 ## Architecture
 
@@ -87,27 +103,6 @@ async fn main() {
 ```bash
 cargo run --example=cartpole --features render
 ```
-
-## Examples
-
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="showcase/cartpole.png" alt="CartPole" width="400" />
-      <br />
-      <sub><b>CartPole</b></sub>
-      <br />
-      <code>cargo run --example=cartpole --features render</code>
-    </td>
-    <td align="center">
-      <img src="showcase/mountain-car.png" alt="MountainCar" width="400" />
-      <br />
-      <sub><b>MountainCar</b></sub>
-      <br />
-      <code>cargo run --example=mountain_car --features render</code>
-    </td>
-  </tr>
-</table>
 
 ## Feature Flags
 
