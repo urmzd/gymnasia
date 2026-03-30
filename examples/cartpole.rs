@@ -17,7 +17,7 @@ async fn main() {
         let mut current_reward = OrderedFloat(0.);
 
         for _ in 0..475 {
-            let action = ::rand::thread_rng().gen_range(0..=1);
+            let action = ::rand::Rng::gen_range(&mut ::rand::thread_rng(), 0..=1);
             let state_reward = renv.step(action);
             current_reward += state_reward.reward;
 
