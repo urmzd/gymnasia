@@ -124,7 +124,7 @@ impl CartPoleEnv {
     }
 
     fn polemass_length(&self) -> O64 {
-        self.masspole + self.length
+        self.masspole * self.length
     }
 }
 
