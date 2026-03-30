@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.0.0 (2026-03-30)
+
+### Breaking Changes
+
+- decouple simulation from rendering, replace SDL2 with macroquad ([a02c8c5](https://github.com/urmzd/gymnasia/commit/a02c8c570cd0abb2cd591259b91aba1d34509afc))
+
+### Documentation
+
+- update README (#2) ([b62c3fb](https://github.com/urmzd/gymnasia/commit/b62c3fb8476b5bc8e2575ec9d4b26cbb7a80cb70))
+- **skills**: align SKILL.md with agentskills.io spec ([7dc9260](https://github.com/urmzd/gymnasia/commit/7dc92602b47b295ae6f0c1af6b009395b585b09d))
+- add showcase screenshot ([62716cf](https://github.com/urmzd/gymnasia/commit/62716cf2e6dd063b1bda218870e1ae650300ceef))
+- add showcase section to README ([d0ec784](https://github.com/urmzd/gymnasia/commit/d0ec784ef324fac4348aa4e490198e6467bfc2de))
+
+### Miscellaneous
+
+- standardize sr.yaml and justfile — floating_tags true, refactor bump, ci/record recipes ([92271b9](https://github.com/urmzd/gymnasia/commit/92271b9ecd550d8feb86ac1d6e1e3da6618db287))
+- use sr-releaser GitHub App for release workflow (#1) ([e151802](https://github.com/urmzd/gymnasia/commit/e151802cbbb016422126754ec77733bc106d13d3))
+- update semantic-release action to sr@v2 ([b260413](https://github.com/urmzd/gymnasia/commit/b260413c311a1ce04a6889fe6a28b2cf33b3814a))
+- display example images in styled HTML table ([facddf5](https://github.com/urmzd/gymnasia/commit/facddf5f9f9b87144f383bbc3e3e095e9de82811))
+- remove Buildkite pipeline config ([f8de89f](https://github.com/urmzd/gymnasia/commit/f8de89fdb0654461abe8790a0d163259797d4216))
+
+[Full Changelog](https://github.com/urmzd/gymnasia/compare/v1.1.0...v2.0.0)
+
+
 ## 1.0.1 (2026-02-27)
 
 ### Bug Fixes
