@@ -28,9 +28,7 @@ where
 {
     /// Wrap an environment with rendering.
     pub fn new(env: E, mode: RenderMode) -> Self {
-        let dl = env.draw_list();
-        let fps = env.render_fps();
-        let screen = Screen::new(dl.height, dl.width, "gymnasia", fps, mode);
+        let screen = Screen;
         let collector = Renderer::new(mode, None, None);
         Self {
             env,
