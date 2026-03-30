@@ -30,6 +30,7 @@ duration = 60000
 type = "screen"
 name = "cartpole"
 setup = "cargo run --example=cartpole --features render &"
+window = "CartPole"
 delay = 5000
 theme = "dracula"
 title = "CartPole"
@@ -44,6 +45,7 @@ type = "snapshot"
 type = "screen"
 name = "mountain-car"
 setup = "cargo run --example=mountain_car --features render &"
+window = "MountainCar"
 delay = 5000
 theme = "dracula"
 title = "MountainCar"

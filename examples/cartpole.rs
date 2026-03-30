@@ -9,6 +9,7 @@ async fn main() {
     let env = CartPoleEnv::new();
     let mut renv = RenderEnv::new(env, RenderMode::Human);
     renv.reset(None, false, None);
+    next_frame().await;
 
     const N: usize = 15;
     let mut rewards = Vec::with_capacity(N);

@@ -18,13 +18,15 @@ impl Screen {
     /// The caller (example main) is responsible for calling `next_frame().await`
     /// after this returns for Human mode.
     pub fn execute(&self, draw_list: &DrawList, mode: RenderMode) -> Renders {
-        // Set up camera so (0,0) is top-left with y increasing downward,
-        // then flip vertically (matching the old SDL2 behavior where flip_vertical=true).
-        let cam = Camera2D {
-            zoom: vec2(2.0 / draw_list.width as f32, -2.0 / draw_list.height as f32),
-            offset: vec2(-1.0, 1.0),
-            ..Default::default()
-        };
+        // Map world coordinates (0,0)–(width,height) to the screen.
+        // y=0 is at the bottom, y=height at the top (standard math convention,
+        // matching OpenAI Gym's coordinate system).
+        let cam = Camera2D::from_display_rect(macroquad::math::Rect::new(
+            0.0,
+            0.0,
+            draw_list.width as f32,
+            draw_list.height as f32,
+        ));
         set_camera(&cam);
 
         for cmd in &draw_list.commands {
