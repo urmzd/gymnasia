@@ -28,9 +28,7 @@ where
 {
     /// Wrap an environment with rendering.
     pub fn new(env: E, mode: RenderMode) -> Self {
-        let dl = env.draw_list();
-        let fps = env.render_fps();
-        let screen = Screen::new(dl.height, dl.width, "gymnasia", fps, mode);
+        let screen = Screen;
         let collector = Renderer::new(mode, None, None);
         Self {
             env,
@@ -88,6 +86,11 @@ where
             .get_renders(&mut |mode| screen.execute(&env.draw_list(), mode))
     }
 
+    /// Advance to the next frame (delegates to the rendering backend).
+    pub async fn next_frame(&self) {
+        self.screen.next_frame().await;
+    }
+
     fn render_current_state(&mut self) {
         let screen = &mut self.screen;
         let env = &self.env;
@@ -116,7 +119,7 @@ where
         let result = render_env.step(action);
         let done = result.terminated || result.truncated;
         results.push(result);
-        macroquad::prelude::next_frame().await;
+        render_env.screen.next_frame().await;
         if done {
             break;
         }

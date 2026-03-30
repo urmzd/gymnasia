@@ -2,7 +2,9 @@
 dir = "./showcase"
 
 [[output.formats]]
-output_type = "png"
+output_type = "gif"
+[[output.formats]]
+output_type = "mp4"
 
 [font]
 family = "MonaspiceNe Nerd Font"
@@ -17,7 +19,7 @@ rows = 40
 
 [[scenes.interactions]]
 type = "type"
-text = "cargo run --example=cartpole_headless --no-default-features 2>&1"
+text = "cargo run --example=cartpole_headless 2>&1"
 speed = 50
 [[scenes.interactions]]
 type = "key"
@@ -29,27 +31,115 @@ duration = 60000
 [[scenes]]
 type = "screen"
 name = "cartpole"
-setup = "cargo run --example=cartpole &"
+setup = "cargo run --example=cartpole --features render &"
+window = "CartPole"
 delay = 5000
 theme = "dracula"
 title = "CartPole"
+frame_duration = 100
 
 [[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
 type = "wait"
-duration = 2000
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
 [[scenes.interactions]]
 type = "snapshot"
 
 [[scenes]]
 type = "screen"
 name = "mountain-car"
-setup = "cargo run --example=mountain_car &"
+setup = "cargo run --example=mountain_car --features render &"
+window = "MountainCar"
 delay = 5000
 theme = "dracula"
 title = "MountainCar"
+frame_duration = 100
 
 [[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
 type = "wait"
-duration = 2000
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
 [[scenes.interactions]]
 type = "snapshot"
