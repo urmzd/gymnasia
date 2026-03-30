@@ -17,7 +17,7 @@ rows = 40
 
 [[scenes.interactions]]
 type = "type"
-text = "cargo run --example=cartpole_headless --no-default-features 2>&1"
+text = "cargo run --example=cartpole_headless 2>&1"
 speed = 50
 [[scenes.interactions]]
 type = "key"
@@ -29,7 +29,7 @@ duration = 60000
 [[scenes]]
 type = "screen"
 name = "cartpole"
-setup = "cargo run --example=cartpole &"
+setup = "cargo run --example=cartpole --features render &"
 delay = 5000
 theme = "dracula"
 title = "CartPole"
@@ -43,7 +43,7 @@ type = "snapshot"
 [[scenes]]
 type = "screen"
 name = "mountain-car"
-setup = "cargo run --example=mountain_car &"
+setup = "cargo run --example=mountain_car --features render &"
 delay = 5000
 theme = "dracula"
 title = "MountainCar"
