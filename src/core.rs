@@ -6,24 +6,11 @@ use serde::Serialize;
 
 use crate::{
     spaces::BoxR,
-    utils::{
-        custom::{structs::Metadata, traits::Sample, types::O64},
-        renderer::{RenderMode, Renders},
-    },
+    utils::custom::{draw::DrawList, traits::Sample, types::O64},
 };
 
-/// Defines the range of values that can be outputted by a given environment.
-#[allow(deprecated)]
-const DEFAULT_REWARD_RANGE: &RewardRange = &(RewardRange {
-    lower_bound: OrderedFloat(f64::NEG_INFINITY),
-    upper_bound: OrderedFloat(f64::INFINITY),
-});
-
-/// Defines the render mode set by a default environment instances.
-const DEFAULT_RENDER_MODE: &RenderMode = &RenderMode::None;
-
 /// Defines a common set of operations available to different environments.
-pub trait Env: Clone + Debug + Serialize + EnvProperties
+pub trait Env: Clone + Debug + Serialize
 where
     Self::Observation: Sample + Into<Vec<f64>>,
 {
@@ -39,6 +26,12 @@ where
     /// The type of the object produced when an environment is reset.
     type ResetInfo;
 
+    /// The type of values that can be observed in the action space.
+    type ActionSpace;
+
+    /// The type of observations produced.
+    type ObservationSpace;
+
     /// Acts on an environment using the given action, producing a reward.
     fn step(&mut self, action: Self::Action) -> ActionReward<Self::Observation, Self::Info>;
 
@@ -50,11 +43,14 @@ where
         options: Option<BoxR<Self::Observation>>,
     ) -> (Self::Observation, Option<Self::ResetInfo>);
 
-    /// Produces the renders, if any, associated with the given mode.
-    fn render(&mut self, mode: RenderMode) -> Renders;
+    /// Provides the object describing the actions that can be observed.
+    fn action_space(&self) -> &Self::ActionSpace;
 
-    /// Closes any open resources associated with the internal rendering service.
-    fn close(&mut self);
+    /// Provides the object describing the states that can be observed in this environment.
+    fn observation_space(&self) -> &Self::ObservationSpace;
+
+    /// Provides the random number generator responsible for seeding states.
+    fn rand_random(&self) -> &Pcg64;
 
     /// Resets the environment and always returns info alongside the observation.
     fn reset_with_info(
@@ -68,53 +64,21 @@ where
         let (obs, info) = self.reset(seed, true, options);
         (obs, info.unwrap_or_default())
     }
-
-    /// Renders using the environment's configured render mode.
-    fn render_current(&mut self) -> Renders
-    where
-        Self: EnvProperties,
-    {
-        let mode = *self.render_mode();
-        self.render(mode)
-    }
 }
 
-/// Defines a set of properties that should be accessible in all environments.
-pub trait EnvProperties
-where
-    Self: Sized,
-{
-    /// The type of values that can be observed in the action space.
-    type ActionSpace;
-    /// The type of observations produced
-    type ObservationSpace;
+/// Environments that can produce a visual representation of their state.
+///
+/// [`DrawList`] is pure data with no rendering-backend dependency, so this
+/// trait is always available regardless of feature flags.
+pub trait Renderable {
+    /// Produce draw commands representing the current visual state.
+    /// The returned [`DrawList`] includes logical canvas width/height.
+    fn draw_list(&self) -> DrawList;
 
-    /// Provides an object describing additional details about this environment.
-    fn metadata(&self) -> &Metadata<Self>;
-
-    /// Provides the random number generator responsible for seeding states.
-    fn rand_random(&self) -> &Pcg64;
-
-    /// Provides the current render mode.
-    fn render_mode(&self) -> &RenderMode {
-        DEFAULT_RENDER_MODE
+    /// Target frames per second for human-mode display.
+    fn render_fps(&self) -> u32 {
+        30
     }
-
-    /// Provides the range of reward values that can be outputted by this environment.
-    #[deprecated(
-        since = "1.1.0",
-        note = "Gymnasium v1.x no longer uses reward_range. Will be removed in a future version."
-    )]
-    #[allow(deprecated)]
-    fn reward_range(&self) -> &RewardRange {
-        DEFAULT_REWARD_RANGE
-    }
-
-    /// Provides the object describing the actions that can be observed.
-    fn action_space(&self) -> &Self::ActionSpace;
-
-    /// Provides the object describing the states that can be observed in this environment.
-    fn observation_space(&self) -> &Self::ObservationSpace;
 }
 
 /// Encapsulates and describes the state update experienced by an environment after acting on an
@@ -125,12 +89,9 @@ pub struct ActionReward<T, E> {
     pub observation: T,
     /// The value of the reward produced.
     pub reward: O64,
-    /// Indicates whether the episode has terminated or not.
-    #[deprecated(since = "1.1.0", note = "Use `terminated` instead")]
-    pub done: bool,
     /// Indicates whether the episode has terminated (reached a terminal state) or not.
     pub terminated: bool,
-    /// Indicates whether the episode has termianted early or  not.
+    /// Indicates whether the episode has terminated early or not.
     pub truncated: bool,
     /// Additional info implementations may provide for purposes beyond classical RL.
     pub info: Option<E>,
@@ -153,6 +114,9 @@ pub struct RewardRange {
 #[allow(deprecated)]
 impl Default for RewardRange {
     fn default() -> Self {
-        DEFAULT_REWARD_RANGE.clone()
+        RewardRange {
+            lower_bound: OrderedFloat(f64::NEG_INFINITY),
+            upper_bound: OrderedFloat(f64::INFINITY),
+        }
     }
 }

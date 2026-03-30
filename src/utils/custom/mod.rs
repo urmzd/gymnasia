@@ -1,8 +1,8 @@
-/// Holds the objects associating with rendering.
-#[cfg(feature = "sdl2")]
+/// Drawing primitives for environment visualization.
+pub mod draw;
+/// Holds the macroquad rendering backend.
+#[cfg(feature = "render")]
 pub mod screen;
-/// Holds structures commonly used.
-pub mod structs;
 /// Holds traits shared among different environment structures.
 pub mod traits;
 /// Holds types common to different environments.

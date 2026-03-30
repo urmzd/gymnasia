@@ -1,55 +1,15 @@
 use derivative::Derivative;
 use derive_new::new;
-use sdl2::{
-    event::Event,
-    gfx::framerate::FPSManager,
-    pixels::PixelFormatEnum,
-    rect::{Point, Rect},
-    render::WindowCanvas,
-    EventPump,
-};
+use macroquad::prelude::*;
 use serde::Serialize;
 
-use crate::utils::renderer::{RenderColor, RenderFrame, RenderMode, Renders};
+use crate::utils::{
+    custom::draw::{Color as DrawColor, DrawCommand, DrawList},
+    renderer::{RenderColor, RenderFrame, RenderMode, Renders},
+};
 
-/// Defines the structures required from SDL2 to process and render environments.
-struct ScreenGui {
-    pub canvas: WindowCanvas,
-    pub fps_manager: FPSManager,
-    pub event_pump: EventPump,
-    // pub event_subsystem: EventSubsystem,
-}
-
-/// Defines a structure to encapsulate information about various transformations.
-#[derive(new)]
-pub struct ScreenGuiTransformations {
-    src: Option<Rect>,
-    dst: Option<Rect>,
-    angle: f64,
-    center: Option<Point>,
-    flip_horizontal: bool,
-    flip_vertical: bool,
-}
-
-impl ScreenGuiTransformations {
-    /// Utility method to define a transformation which flips the GUI vertically.
-    pub fn with_flip_vertical(self, flip_vertical: bool) -> Self {
-        Self {
-            flip_vertical,
-            ..self
-        }
-    }
-}
-
-impl Default for ScreenGuiTransformations {
-    fn default() -> Self {
-        Self::new(None, None, 0., None, false, true)
-    }
-}
-
-/// Defines a wrapper over SDL2, similar to PyGame to enable rapid development
-/// of GUI environments.
-#[derive(Serialize, Derivative, new)]
+/// Wrapper over macroquad for rendering environments.
+#[derive(Serialize, Derivative, new, Clone)]
 #[derivative(Debug)]
 pub struct Screen {
     height: u32,
@@ -60,157 +20,121 @@ pub struct Screen {
     #[serde(skip_serializing)]
     #[derivative(Debug = "ignore")]
     #[new(default)]
-    gui: Option<ScreenGui>,
+    initialized: bool,
 }
 
-impl Clone for Screen {
-    fn clone(&self) -> Self {
-        Self {
-            height: self.height,
-            width: self.width,
-            title: self.title,
-            render_fps: self.render_fps,
-            mode: self.mode,
-            gui: None,
-        }
-    }
-}
 impl Screen {
-    /// Closes the process responsible for rendering the environment.
+    /// Closes the rendering surface.
     pub fn close(&mut self) {
-        self.gui.take();
+        self.initialized = false;
     }
 
-    /// Checks whether the screen is still available.
+    /// Returns whether the screen has been initialized.
     pub fn is_open(&self) -> bool {
-        self.gui.is_some()
+        self.initialized
     }
 
-    /// Transforms the canvas into pixel coordinates for external consumption.
-    fn canvas_to_pixels(canvas: &mut WindowCanvas, screen_width: u32) -> RenderFrame {
-        let pixels = canvas
-            .read_pixels(None, PixelFormatEnum::RGB24)
-            .expect("pixels");
-
-        let colours: Vec<RenderColor> = pixels
-            .chunks(3)
-            .map(|chunk| RenderColor::RGB(chunk[0], chunk[1], chunk[2]))
-            .collect();
-
-        let pixels_array: Vec<Vec<RenderColor>> = colours
-            .chunks(screen_width as usize)
-            .map(|chunk| chunk.into())
-            .collect();
-
-        RenderFrame::new(pixels_array)
-    }
-
-    /// Outputs the contents found in the GUI buffer to the display surface.
-    pub fn render(&mut self, mode: RenderMode) -> Renders {
-        match self.gui.as_mut() {
-            Some(ScreenGui {
-                canvas,
-                fps_manager,
-                ..
-            }) => {
-                fps_manager.delay();
-                canvas.present();
-                if [RenderMode::RgbArray, RenderMode::SingleRgbArray].contains(&mode) {
-                    Renders::SingleRgbArray(Self::canvas_to_pixels(canvas, self.width))
-                } else {
-                    Renders::None
-                }
-            }
-            _ => Renders::None,
-        }
-    }
-
-    /// Outputs the width of the internal screen generated.
+    /// Returns the logical screen width.
     pub fn screen_width(&self) -> u32 {
         self.width
     }
 
-    /// Draws new content on the canvas using the closure and transformation instructions provided.
-    pub fn draw_on_canvas(
-        &mut self,
-        using_fn: impl FnMut(&mut WindowCanvas),
-        with_transformations: ScreenGuiTransformations,
-    ) {
-        if let Some(ScreenGui { canvas, .. }) = self.gui.as_mut() {
-            let texture_creator = canvas.texture_creator();
-            let mut texture = texture_creator
-                .create_texture_target(PixelFormatEnum::RGB24, self.width, self.height)
-                .expect("Create texture.");
+    /// Execute a draw list and return renders based on mode.
+    ///
+    /// The caller (example main) is responsible for calling `next_frame().await`
+    /// after this returns for Human mode.
+    pub fn execute(&mut self, draw_list: &DrawList, mode: RenderMode) -> Renders {
+        self.initialized = true;
 
-            canvas
-                .with_texture_canvas(&mut texture, using_fn)
-                .expect("Was unable to render.");
+        // Set up camera so (0,0) is top-left with y increasing downward,
+        // then flip vertically (matching the old SDL2 behavior where flip_vertical=true).
+        let cam = Camera2D {
+            zoom: vec2(2.0 / draw_list.width as f32, -2.0 / draw_list.height as f32),
+            offset: vec2(-1.0, 1.0),
+            ..Default::default()
+        };
+        set_camera(&cam);
 
-            canvas
-                .copy_ex(
-                    &texture,
-                    with_transformations.src,
-                    with_transformations.dst,
-                    with_transformations.angle,
-                    with_transformations.center,
-                    with_transformations.flip_horizontal,
-                    with_transformations.flip_vertical,
-                )
-                .expect("Transformations failed to be applied.");
-        }
-    }
-
-    /// Processes all events found in the queue.
-    pub fn consume_events(&mut self) {
-        if let Some(ScreenGui { event_pump, .. }) = self.gui.as_mut() {
-            for event in event_pump.poll_iter() {
-                if let Event::Quit { .. } = event {
-                    panic!("Animation was forced to exit.")
+        for cmd in &draw_list.commands {
+            match cmd {
+                DrawCommand::Clear(color) => {
+                    clear_background(to_mq_color(color));
+                }
+                DrawCommand::FilledPolygon { vertices, color } => {
+                    draw_convex_polygon(vertices, to_mq_color(color));
+                }
+                DrawCommand::FilledCircle {
+                    x,
+                    y,
+                    radius,
+                    color,
+                } => {
+                    draw_circle(*x, *y, *radius, to_mq_color(color));
+                }
+                DrawCommand::Line {
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                    color,
+                } => {
+                    draw_line(*x1, *y1, *x2, *y2, 1.0, to_mq_color(color));
+                }
+                DrawCommand::Polyline { points, color } => {
+                    let c = to_mq_color(color);
+                    for pair in points.windows(2) {
+                        draw_line(pair[0].0, pair[0].1, pair[1].0, pair[1].1, 1.0, c);
+                    }
                 }
             }
         }
+
+        if [RenderMode::RgbArray, RenderMode::SingleRgbArray].contains(&mode) {
+            self.capture_pixels()
+        } else {
+            Renders::None
+        }
     }
 
-    /// Generates a window to begin displaying content on.
-    pub fn load_gui(&mut self) {
-        if self.gui.is_none() {
-            let title = self.title;
-            let width = self.width;
-            let height = self.height;
-            let render_fps = self.render_fps;
-            let mode = self.mode;
+    fn capture_pixels(&self) -> Renders {
+        let image = get_screen_data();
+        let w = image.width() as usize;
+        let h = image.height() as usize;
+        let bytes = image.bytes;
 
-            let gui = {
-                let context = sdl2::init().unwrap();
-                let video_subsystem = context.video().unwrap();
-                let mut window_builder = video_subsystem.window(title, width, height);
-
-                window_builder.position_centered();
-
-                if mode != RenderMode::Human {
-                    window_builder.hidden();
-                }
-
-                let window = window_builder.build().unwrap();
-                let canvas = window.into_canvas().accelerated().build().unwrap();
-                let event_pump = context.event_pump().expect("Could not recieve event pump.");
-                let mut fps_manager = FPSManager::new();
-                // let event_subsystem = context
-                //     .event()
-                //     .expect("Event subsystem was not initialized.");
-                fps_manager
-                    .set_framerate(render_fps)
-                    .expect("Framerate was unable to be set.");
-
-                ScreenGui {
-                    canvas,
-                    event_pump,
-                    // event_subsystem,
-                    fps_manager,
-                }
-            };
-
-            self.gui = Some(gui);
+        // macroquad returns RGBA, we need RGB, and the image is bottom-up
+        let mut rows: Vec<Vec<RenderColor>> = Vec::with_capacity(h);
+        for y in 0..h {
+            let mut row = Vec::with_capacity(w);
+            for x in 0..w {
+                let idx = (y * w + x) * 4;
+                row.push(RenderColor::RGB(bytes[idx], bytes[idx + 1], bytes[idx + 2]));
+            }
+            rows.push(row);
         }
+
+        Renders::SingleRgbArray(RenderFrame::new(rows))
+    }
+}
+
+fn to_mq_color(c: &DrawColor) -> Color {
+    Color::new(
+        c.r as f32 / 255.0,
+        c.g as f32 / 255.0,
+        c.b as f32 / 255.0,
+        1.0,
+    )
+}
+
+/// Draw a convex polygon as a triangle fan.
+fn draw_convex_polygon(vertices: &[(f32, f32)], color: Color) {
+    if vertices.len() < 3 {
+        return;
+    }
+    let (ax, ay) = vertices[0];
+    for i in 1..vertices.len() - 1 {
+        let (bx, by) = vertices[i];
+        let (cx, cy) = vertices[i + 1];
+        draw_triangle(vec2(ax, ay), vec2(bx, by), vec2(cx, cy), color);
     }
 }
