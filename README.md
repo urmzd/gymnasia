@@ -30,7 +30,9 @@
       <br />
       <sub><b>MountainCar</b></sub>
     </td>
-    <td align="center">
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
       <img src="showcase/cartpole-headless.gif" alt="CartPole (headless)" width="300" />
       <br />
       <sub><b>CartPole (headless)</b></sub>
@@ -40,13 +42,23 @@
 
 ## Architecture
 
-Unlike Python Gymnasium, gymnasia **separates simulation from rendering**:
+Unlike Python Gymnasium, gymnasia **separates simulation from rendering** and
+uses **pure-Rust dependencies only** — no C bindings, no SDL2, no system library
+installation. This eliminates cross-compilation headaches and keeps binary
+bundling simple.
+
+Rendering is abstracted behind a backend-agnostic `DrawList` of simple draw
+commands (`FilledPolygon`, `FilledCircle`, `Line`, etc.). The current backend is
+[macroquad](https://github.com/not-fl3/macroquad), but swapping it out requires
+changing only the feature-gated `Screen` implementation — environment code never
+touches a graphics API directly.
 
 | Layer | What it does | Feature gate |
 |-------|-------------|--------------|
 | `Env` trait | Pure physics — `step()`, `reset()` | Always compiled |
 | `Renderable` trait | Produces a `DrawList` (backend-agnostic draw commands) | Always compiled |
-| `RenderEnv<E>` wrapper | Composes `Env + Renderable` with a macroquad window | `render` feature |
+| `Screen` | Translates `DrawList` into graphics calls (currently macroquad) | `render` feature |
+| `RenderEnv<E>` wrapper | Composes `Env + Renderable` with a `Screen` | `render` feature |
 
 Gymnasium mixes rendering into every `step()` / `reset()` call and requires
 `render_mode` at construction. This couples every environment to a graphics
@@ -94,7 +106,7 @@ async fn main() {
     renv.reset(None, false, None);
     loop {
         let result = renv.step(1);
-        macroquad::prelude::next_frame().await;
+        renv.next_frame().await;
         if result.terminated { break; }
     }
 }
@@ -109,6 +121,29 @@ cargo run --example=cartpole --features render
 | Feature | Default | Description |
 |---------|---------|-------------|
 | `render` | No | macroquad-based window rendering and pixel capture |
+
+## Benchmarks
+
+<!-- embed-src src="benches/RESULTS.md" -->
+| Benchmark | Time (median) |
+|-----------|---------------|
+| `cartpole/step` | ~26 ns |
+| `cartpole/reset` | ~21 ns |
+| `cartpole/episode` | ~248 ns |
+| `mountain_car/step` | ~25 ns |
+| `mountain_car/reset` | ~15 ns |
+| `mountain_car/episode` | ~4.6 µs |
+
+> Apple M3 Pro — `cargo bench` via [Criterion](https://github.com/bheisler/criterion.rs). Run `cargo bench` to reproduce.
+<!-- /embed-src -->
+
+## History
+
+Gymnasia is a fork of
+[MathisWellmann/gym-rs](https://github.com/MathisWellmann/gym-rs), which is no
+longer actively maintained. OpenAI Gym itself has since evolved into
+[Gymnasium](https://github.com/Farama-Foundation/Gymnasium) — gymnasia tracks
+that direction for Rust.
 
 ## Contributing
 

@@ -34,6 +34,13 @@ num-traits = "0.2"
 default = []
 render = ["dep:macroquad"]
 
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "envs"
+harness = false
+
 [[example]]
 name = "cartpole"
 required-features = ["render"]
