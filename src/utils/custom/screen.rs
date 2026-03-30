@@ -70,6 +70,11 @@ impl Screen {
         }
     }
 
+    /// Advance to the next frame (frame pacing).
+    pub async fn next_frame(&self) {
+        macroquad::prelude::next_frame().await;
+    }
+
     fn capture_pixels() -> Renders {
         let image = get_screen_data();
         let w = image.width() as usize;
