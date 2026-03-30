@@ -4,7 +4,17 @@ use gymnasia::{
 };
 use macroquad::prelude::*;
 
-#[macroquad::main("MountainCar")]
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "MountainCar".to_string(),
+        window_width: 600,
+        window_height: 400,
+        window_resizable: false,
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
     let env = MountainCarEnv::new();
     let mut renv = RenderEnv::new(env, RenderMode::Human);

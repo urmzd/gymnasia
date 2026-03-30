@@ -4,14 +4,24 @@ use gymnasia::{
 use macroquad::prelude::*;
 use ordered_float::OrderedFloat;
 
-#[macroquad::main("CartPole")]
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "CartPole".to_string(),
+        window_width: 600,
+        window_height: 400,
+        window_resizable: false,
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
     let env = CartPoleEnv::new();
     let mut renv = RenderEnv::new(env, RenderMode::Human);
     renv.reset(None, false, None);
     next_frame().await;
 
-    const N: usize = 15;
+    const N: usize = 100;
     let mut rewards = Vec::with_capacity(N);
 
     for _ in 0..N {
