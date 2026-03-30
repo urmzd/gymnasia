@@ -2,7 +2,9 @@
 dir = "./showcase"
 
 [[output.formats]]
-output_type = "png"
+output_type = "gif"
+[[output.formats]]
+output_type = "mp4"
 
 [font]
 family = "MonaspiceNe Nerd Font"
@@ -34,10 +36,53 @@ window = "CartPole"
 delay = 5000
 theme = "dracula"
 title = "CartPole"
+frame_duration = 100
 
 [[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
 type = "wait"
-duration = 2000
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
 [[scenes.interactions]]
 type = "snapshot"
 
@@ -49,9 +94,52 @@ window = "MountainCar"
 delay = 5000
 theme = "dracula"
 title = "MountainCar"
+frame_duration = 100
 
 [[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
 type = "wait"
-duration = 2000
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
+[[scenes.interactions]]
+type = "snapshot"
+[[scenes.interactions]]
+type = "wait"
+duration = 500
 [[scenes.interactions]]
 type = "snapshot"
