@@ -126,3 +126,43 @@ pub use time_limit::TimeLimit;
 pub use transform_action::TransformAction;
 pub use transform_observation::TransformObservation;
 pub use transform_reward::TransformReward;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Minimal wrapper that purely delegates — used to verify the
+    /// `delegate_env!` macro compiles and produces a valid `Env` impl.
+    struct Passthrough<E: crate::core::Env> {
+        env: E,
+    }
+
+    crate::delegate_env!(Passthrough<E>, env);
+
+    impl<E: crate::core::Env> Wrapper for Passthrough<E> {
+        type Inner = E;
+        fn inner(&self) -> &E {
+            &self.env
+        }
+        fn inner_mut(&mut self) -> &mut E {
+            &mut self.env
+        }
+        fn into_inner(self) -> E {
+            self.env
+        }
+    }
+
+    #[test]
+    fn delegate_env_macro_compiles_and_delegates() {
+        use crate::core::{Env, Flatten};
+        use crate::envs::classical_control::cartpole::CartPoleEnv;
+
+        let env = CartPoleEnv::new();
+        let mut w = Passthrough { env };
+        let obs = w.reset(Some(42), None);
+        let result = w.step(1_i64);
+        // Passthrough just delegates, so we get valid results.
+        assert_eq!(obs.flatten().len(), 4);
+        assert!(result.reward >= 0.0);
+    }
+}

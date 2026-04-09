@@ -5,6 +5,10 @@ use super::Wrapper;
 /// Applies a user-provided function to transform observations.
 ///
 /// Can change the observation type (e.g. from a struct to a processed form).
+///
+/// **Note:** `observation_space()` still returns the *inner* environment's
+/// space. The caller is responsible for interpreting transformed observations
+/// against the original space or constructing a new space externally.
 pub struct TransformObservation<E: Env, F, O> {
     env: E,
     func: F,

@@ -279,7 +279,7 @@ Gymnasia is a fork of
 [MathisWellmann/gym-rs](https://github.com/MathisWellmann/gym-rs), which is no
 longer actively maintained. OpenAI Gym itself has since evolved into
 [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) — gymnasia tracks
-that direction for Rust. See [ROADMAP.md](./ROADMAP.md) for feature parity status.
+that direction for Rust. See [docs/roadmap.md](./docs/roadmap.md) for feature parity status.
 
 ## Contributing
 

@@ -1,5 +1,6 @@
 /// The result of a single environment step.
 #[derive(Clone, Debug, PartialEq)]
+#[must_use]
 pub struct StepResult<O> {
     /// The observation produced after the action was applied.
     pub observation: O,

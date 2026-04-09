@@ -52,11 +52,12 @@ impl Flatten for f64 {
 }
 
 impl Flatten for Vec<f64> {
-    /// Returns `0` because `Vec<f64>` has no fixed compile-time dimension.
+    /// # Panics
     ///
-    /// Callers that need the actual length should use `.flatten().len()` instead.
+    /// Always panics — `Vec<f64>` has no fixed compile-time dimension.
+    /// Use `.flatten().len()` on an instance instead.
     fn flat_dim() -> usize {
-        0
+        panic!("Vec<f64> has no fixed dimension; use .flatten().len() on an instance instead")
     }
 
     fn flatten(&self) -> Vec<f64> {

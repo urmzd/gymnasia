@@ -4,6 +4,9 @@ use super::Wrapper;
 
 /// Applies a user-provided function to transform actions before passing
 /// them to the inner environment.
+///
+/// **Note:** `action_space()` still returns the *inner* environment's space.
+/// The caller is responsible for ensuring transformed actions are valid.
 pub struct TransformAction<E: Env, F, A> {
     env: E,
     func: F,
