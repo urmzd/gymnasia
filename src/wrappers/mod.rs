@@ -84,30 +84,30 @@ macro_rules! delegate_env {
 
 // --- Concrete wrappers ---
 
-mod time_limit;
-mod order_enforcing;
 mod autoreset;
-mod record_episode_statistics;
-mod clip_reward;
-mod normalize_reward;
-mod transform_reward;
 mod clip_action;
-mod rescale_action;
-mod transform_action;
+mod clip_reward;
 mod flatten_observation;
 mod normalize_observation;
+mod normalize_reward;
+mod order_enforcing;
+mod record_episode_statistics;
+mod rescale_action;
+mod time_limit;
+mod transform_action;
 mod transform_observation;
+mod transform_reward;
 
-pub use time_limit::TimeLimit;
-pub use order_enforcing::OrderEnforcing;
 pub use autoreset::Autoreset;
-pub use record_episode_statistics::RecordEpisodeStatistics;
-pub use clip_reward::ClipReward;
-pub use normalize_reward::NormalizeReward;
-pub use transform_reward::TransformReward;
 pub use clip_action::ClipAction;
-pub use rescale_action::RescaleAction;
-pub use transform_action::TransformAction;
+pub use clip_reward::ClipReward;
 pub use flatten_observation::FlattenObservation;
 pub use normalize_observation::NormalizeObservation;
+pub use normalize_reward::NormalizeReward;
+pub use order_enforcing::OrderEnforcing;
+pub use record_episode_statistics::RecordEpisodeStatistics;
+pub use rescale_action::RescaleAction;
+pub use time_limit::TimeLimit;
+pub use transform_action::TransformAction;
 pub use transform_observation::TransformObservation;
+pub use transform_reward::TransformReward;
