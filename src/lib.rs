@@ -1,4 +1,4 @@
-#![warn(missing_docs, unused_crate_dependencies)]
+#![warn(missing_docs)]
 //! A Rust implementation of OpenAI's Gymnasium environments.
 //!
 //! # Architecture
