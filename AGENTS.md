@@ -10,7 +10,7 @@ The crate is organized into four top-level modules:
 
 | Module | Purpose |
 |--------|---------|
-| `core` | The `Env` and `EnvProperties` traits that every environment implements, plus `ActionReward` and `RewardRange` types. |
+| `core` | The `Env` and `Renderable` traits that every environment implements, plus `ActionReward`. |
 | `envs` | Concrete environment implementations (e.g. `cartpole`, `mountain_car`) under `classical_control`. |
 | `spaces` | Value-space descriptors: `BoxR`, `Discrete`, and the `Space` trait. |
 | `utils` | Rendering (`renderer`), seeding (`seeding`), and shared helpers (`custom/`). |
@@ -22,7 +22,7 @@ Environments implement `Env` (step, reset, render, close) and `EnvProperties` (a
 | File | Description |
 |------|-------------|
 | `src/lib.rs` | Crate root; re-exports all public modules. |
-| `src/core.rs` | `Env` and `EnvProperties` traits, `ActionReward`, `RewardRange`. |
+| `src/core.rs` | `Env` and `Renderable` traits, `ActionReward`. |
 | `src/envs/classical_control/cartpole.rs` | CartPole environment. |
 | `src/envs/classical_control/mountain_car.rs` | MountainCar environment. |
 | `src/spaces/box_r.rs` | Continuous box space. |
