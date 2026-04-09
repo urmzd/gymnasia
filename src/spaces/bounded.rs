@@ -31,6 +31,12 @@ use super::{sample_space::SampleSpace, space::Space};
 ///             y: rng.gen_range(low.y..=high.y),
 ///         }
 ///     }
+///     fn clamp(value: Self, low: &Self, high: &Self) -> Self {
+///         MyObs {
+///             x: value.x.clamp(low.x, high.x),
+///             y: value.y.clamp(low.y, high.y),
+///         }
+///     }
 /// }
 /// ```
 pub trait Bounded: Sized + Clone + Debug {
@@ -41,16 +47,7 @@ pub trait Bounded: Sized + Clone + Debug {
     fn sample_uniform<R: Rng>(rng: &mut R, low: &Self, high: &Self) -> Self;
 
     /// Clamp `value` element-wise to `[low, high]`.
-    ///
-    /// The default implementation returns `low` if out of bounds — override
-    /// this for proper element-wise clamping on composite types.
-    fn clamp(value: Self, low: &Self, high: &Self) -> Self {
-        if Self::in_bounds(&value, low, high) {
-            value
-        } else {
-            low.clone()
-        }
-    }
+    fn clamp(value: Self, low: &Self, high: &Self) -> Self;
 }
 
 /// A bounded continuous space defined by low/high bounds.
@@ -107,6 +104,32 @@ impl<B: Bounded> SampleSpace for BoxSpace<B> {
 }
 
 // --- Shipped Bounded implementations ---
+
+impl Bounded for Vec<f64> {
+    fn in_bounds(value: &Self, low: &Self, high: &Self) -> bool {
+        value.len() == low.len()
+            && value
+                .iter()
+                .zip(low.iter().zip(high.iter()))
+                .all(|(v, (lo, hi))| v >= lo && v <= hi)
+    }
+
+    fn sample_uniform<R: Rng>(rng: &mut R, low: &Self, high: &Self) -> Self {
+        assert_eq!(low.len(), high.len(), "Vec<f64> bounds length mismatch");
+        low.iter()
+            .zip(high.iter())
+            .map(|(lo, hi)| rng.gen_range(*lo..=*hi))
+            .collect()
+    }
+
+    fn clamp(value: Self, low: &Self, high: &Self) -> Self {
+        value
+            .into_iter()
+            .zip(low.iter().zip(high.iter()))
+            .map(|(v, (lo, hi))| v.clamp(*lo, *hi))
+            .collect()
+    }
+}
 
 impl Bounded for f64 {
     fn in_bounds(value: &Self, low: &Self, high: &Self) -> bool {
