@@ -1,6 +1,6 @@
 use gymnasia::{
     envs::classical_control::mountain_car::MountainCarEnv,
-    render::{render_env::RenderEnv, renderer::RenderMode},
+    render::{RenderEnv, renderer::RenderMode},
 };
 use macroquad::prelude::*;
 
