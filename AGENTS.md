@@ -59,7 +59,7 @@ cargo doc --no-default-features     # build docs
 
 ## Code Style
 
-- **Formatting**: `rustfmt` (config in `rustfmt.toml`).
+- **Formatting**: `rustfmt` (default settings).
 - **Linting**: `clippy` with all warnings enabled; `dead_code` is denied.
 - **Commit convention**: Angular conventional commits enforced via `sr.yaml`.
 - **Feature flags**: `render` for macroquad-based visualization.
