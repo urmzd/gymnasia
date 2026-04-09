@@ -8,7 +8,22 @@
 //! Wrappers that track metadata (e.g. episode statistics) expose it via
 //! typed methods on the wrapper itself — there is no dynamic info dict.
 
-use crate::core::Env;
+use crate::{
+    core::Env,
+    spaces::{Bounded, BoxSpace},
+};
+
+/// Helper trait for extracting bounds from an action space.
+pub trait AsBoxBounds<B: Bounded> {
+    /// Get the low and high bounds.
+    fn bounds(&self) -> (&B, &B);
+}
+
+impl<B: Bounded> AsBoxBounds<B> for BoxSpace<B> {
+    fn bounds(&self) -> (&B, &B) {
+        (&self.low, &self.high)
+    }
+}
 
 /// Provides access to the wrapper chain.
 ///

@@ -1,9 +1,9 @@
 use crate::{
     core::{Env, StepResult},
-    spaces::{Bounded, BoxSpace},
+    spaces::Bounded,
 };
 
-use super::Wrapper;
+use super::{AsBoxBounds, Wrapper};
 
 /// Clips continuous actions to the action space bounds.
 ///
@@ -54,18 +54,6 @@ where
     }
     fn close(&mut self) {
         self.env.close();
-    }
-}
-
-/// Helper trait for extracting bounds from an action space.
-pub trait AsBoxBounds<B: Bounded> {
-    /// Get the low and high bounds.
-    fn bounds(&self) -> (&B, &B);
-}
-
-impl<B: Bounded> AsBoxBounds<B> for BoxSpace<B> {
-    fn bounds(&self) -> (&B, &B) {
-        (&self.low, &self.high)
     }
 }
 
