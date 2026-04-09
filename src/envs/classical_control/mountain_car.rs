@@ -313,20 +313,12 @@ impl Env for MountainCarEnv {
         }
     }
 
-    fn reset(
-        &mut self,
-        seed: Option<u64>,
-        options: Self::ResetOptions,
-    ) -> Self::Observation {
+    fn reset(&mut self, seed: Option<u64>, options: Self::ResetOptions) -> Self::Observation {
         let (rand_random, _) = crate::utils::seeding::rand_random(seed);
         self.rand_random = rand_random;
 
         self.state = if let Some(bounds) = options {
-            MountainCarObservation::sample_uniform(
-                &mut self.rand_random,
-                &bounds.low,
-                &bounds.high,
-            )
+            MountainCarObservation::sample_uniform(&mut self.rand_random, &bounds.low, &bounds.high)
         } else {
             MountainCarObservation::sample_default(&mut self.rand_random)
         };

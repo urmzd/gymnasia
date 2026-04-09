@@ -394,11 +394,7 @@ impl Env for CartPoleEnv {
         }
     }
 
-    fn reset(
-        &mut self,
-        seed: Option<u64>,
-        options: Self::ResetOptions,
-    ) -> Self::Observation {
+    fn reset(&mut self, seed: Option<u64>, options: Self::ResetOptions) -> Self::Observation {
         let (rand_random, _) = crate::utils::seeding::rand_random(seed);
         self.rand_random = rand_random;
 
