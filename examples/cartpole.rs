@@ -1,6 +1,6 @@
 use gymnasia::{
     envs::classical_control::cartpole::CartPoleEnv,
-    render::{RenderEnv, renderer::RenderMode},
+    render::{renderer::RenderMode, RenderEnv},
 };
 use macroquad::prelude::*;
 
