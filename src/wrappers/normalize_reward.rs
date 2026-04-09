@@ -45,9 +45,6 @@ impl<E: Env> NormalizeReward<E> {
     }
 
     fn update_and_normalize(&mut self, reward: f64, terminated: bool) -> f64 {
-        if terminated {
-            self.returns = 0.0;
-        }
         self.returns = self.returns * self.gamma + reward;
 
         // Welford online update
@@ -55,9 +52,16 @@ impl<E: Env> NormalizeReward<E> {
         let delta = self.returns - self.running_mean;
         self.running_mean += delta / self.count;
         let delta2 = self.returns - self.running_mean;
-        self.running_var += (delta * delta2 - self.running_var) / self.count;
+        self.running_var =
+            (self.running_var + (delta * delta2 - self.running_var) / self.count).max(0.0);
 
-        reward / (self.running_var.sqrt() + self.epsilon)
+        let normalized = reward / (self.running_var.sqrt() + self.epsilon);
+
+        if terminated {
+            self.returns = 0.0;
+        }
+
+        normalized
     }
 }
 
