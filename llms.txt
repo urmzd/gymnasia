@@ -1,6 +1,6 @@
 # Gymnasia
 
-> OpenAI Gymnasium environments implemented in pure Rust. Provides CartPole and MountainCar classical control environments with an optional SDL2 rendering backend. Designed as a drop-in Rust alternative to OpenAI Gym for reinforcement learning research and experimentation.
+> OpenAI Gymnasium environments implemented in pure Rust. Provides CartPole and MountainCar classical control environments with an optional macroquad rendering backend. Designed as a drop-in Rust alternative to Gymnasium for reinforcement learning research and experimentation.
 
 ## Docs
 
@@ -11,10 +11,12 @@
 
 ## API / Key Files
 
-- [src/core.rs](https://github.com/urmzd/gymnasia/blob/main/src/core.rs): `Env` and `EnvProperties` traits, `ActionReward` type
+- [src/core/](https://github.com/urmzd/gymnasia/blob/main/src/core/): `Env`, `Renderable`, `StepResult`, and `Flatten` traits/types
 - [src/envs/classical_control/cartpole.rs](https://github.com/urmzd/gymnasia/blob/main/src/envs/classical_control/cartpole.rs): CartPole environment
 - [src/envs/classical_control/mountain_car.rs](https://github.com/urmzd/gymnasia/blob/main/src/envs/classical_control/mountain_car.rs): MountainCar environment
-- [src/spaces/](https://github.com/urmzd/gymnasia/blob/main/src/spaces/): Discrete and continuous observation/action spaces
+- [src/spaces/](https://github.com/urmzd/gymnasia/blob/main/src/spaces/): `BoxSpace<B: Bounded>`, `Discrete`, `MultiDiscrete`, `MultiBinary`
+- [src/wrappers/](https://github.com/urmzd/gymnasia/blob/main/src/wrappers/): 13 composable wrappers (`TimeLimit`, `ClipAction`, `NormalizeObservation`, etc.)
+- [src/render/](https://github.com/urmzd/gymnasia/blob/main/src/render/): `RenderEnv`, `DrawList`, macroquad backend (feature-gated)
 
 ## Optional
 

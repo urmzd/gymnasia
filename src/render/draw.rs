@@ -1,6 +1,6 @@
 //! Drawing primitives that environments emit for rendering.
 //!
-//! Environments produce a [`DrawList`] describing what to draw.
+//! Environments produce a `DrawList` describing what to draw.
 //! The rendering backend (macroquad) consumes it. These types have
 //! **no dependency on any graphics library** — they are always compiled.
 

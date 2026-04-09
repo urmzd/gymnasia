@@ -16,13 +16,13 @@ No system C libraries are required. Rendering uses macroquad (pure Rust, compile
 **Headless (default):**
 ```toml
 [dependencies]
-gymnasia = "2"
+gymnasia = "3"
 ```
 
 **With rendering:**
 ```toml
 [dependencies]
-gymnasia = { version = "2", features = ["render"] }
+gymnasia = { version = "3", features = ["render"] }
 ```
 
 ### From source
@@ -53,7 +53,7 @@ cargo build --features render
 ### Headless
 
 ```bash
-cargo run --example=cartpole_headless
+cargo run --example=cartpole_headless --no-default-features
 ```
 
 ### With rendering
@@ -69,13 +69,11 @@ All tasks are available via `just`:
 
 ```bash
 just              # List all available recipes
-just check        # Run fmt + clippy + test + doc
-just test         # Run tests (headless)
-just test-all     # Run tests (all features)
-just fmt          # Format Rust + TOML
-just lint         # Clippy with warnings as errors
-just doc          # Build documentation
-just clean        # Remove build artifacts
+just fetch        # Fetch dependencies
+just build        # Build the project
+just fmt          # Format code
+just lint         # Run clippy
+just check        # Run all CI checks (fmt + lint + test)
 ```
 
 ## CI Verification
@@ -89,9 +87,7 @@ just check
 Or individually:
 
 ```bash
-cargo check
-cargo clippy -- -D warnings
-cargo test
-cargo doc --no-deps
 cargo fmt --all -- --check
+cargo clippy --no-default-features -- -D warnings
+cargo test --no-default-features
 ```

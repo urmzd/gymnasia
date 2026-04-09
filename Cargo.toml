@@ -1,6 +1,6 @@
 [package]
 name = "gymnasia"
-version = "2.0.0"
+version = "3.0.0"
 authors = ["Urmzd Mukhammadnaim <hello@urmzd.com>"]
 edition = "2021"
 license = "Apache-2.0"
@@ -22,8 +22,6 @@ all = "warn"
 rand = "0.8"
 rand_pcg = "0.3"
 log = "0.4.11"
-derive-new = "0.7"
-
 macroquad = { version = "0.4", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 derivative = { version = "2.2" }

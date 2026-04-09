@@ -1,6 +1,6 @@
 use gymnasia::{
-    envs::classical_control::mountain_car::MountainCarEnv, render::RenderEnv,
-    utils::renderer::RenderMode,
+    envs::classical_control::mountain_car::MountainCarEnv,
+    render::{renderer::RenderMode, RenderEnv},
 };
 use macroquad::prelude::*;
 
@@ -16,9 +16,11 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    use gymnasia::core::Env;
+
     let env = MountainCarEnv::new();
     let mut renv = RenderEnv::new(env, RenderMode::Human);
-    renv.reset(None, false, None);
+    renv.reset(None, None);
     next_frame().await;
 
     const N: usize = 15;
@@ -30,7 +32,7 @@ async fn main() {
             if episode_length > 200 {
                 break;
             }
-            let action = ::rand::Rng::gen_range(&mut ::rand::thread_rng(), 0..3);
+            let action: i64 = ::rand::Rng::gen_range(&mut ::rand::thread_rng(), 0..3);
             let result = renv.step(action);
             episode_length += 1;
             println!("episode_length: {}", episode_length);
@@ -42,6 +44,6 @@ async fn main() {
             }
         }
 
-        renv.reset(None, false, None);
+        renv.reset(None, None);
     }
 }

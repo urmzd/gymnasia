@@ -1,40 +1,16 @@
-## Changes:
+## Summary
 
-<!---
-Delete all that do not apply:
--->
+<!-- What changed, why, and how? -->
 
-* 🩹 Bug Fix
-* 🦚 Feature
-* 📙 Documentation
-* 🪣 Misc
+## References
 
-## References:
+<!-- Issues, papers, etc. -->
 
-<!--
-issues, papers, etc
--->
+## Test plan
 
-## Changes proposed by this PR:
+- [ ] `just check` passes
+- [ ] Relevant tests added/updated
 
-<!---
-Tell the reviewer What changed, Why, and How were you able to accomplish that?
--->
+## Notes
 
-## Notes to reviewer:
-
-<!---
-Leave a message to whoever is going to review this PR.
-Mainly, pointers to review the PR, and how they can test it.
-If things are still WIP or feedback on particular impl details
-are desired, state them here too.
--->
-
-## 📜 Checklist
-
-* [ ] The PR scope is bounded
-* [ ] Relevant issues and discussions are referenced
-* [ ] Test coverage is excellent and passes
-* [ ] Tests test the desired behavior
-* [ ] Documentation is thorough
-
+<!-- Anything the reviewer should know. -->

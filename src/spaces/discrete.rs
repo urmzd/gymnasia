@@ -1,70 +1,125 @@
 use rand::{distributions::Uniform, prelude::Distribution, Rng};
 use serde::Serialize;
 
-use super::{discrete_range::DiscreteRange, sample_space::SampleSpace, Space};
+use super::{sample_space::SampleSpace, space::Space};
 
-/// Defines a set of discrete integers starting at 0.
+/// A discrete space of integers `{start, start+1, ..., start+n-1}`.
 ///
-/// The value held by this structure defines the largest inclusive value that
-/// exists within the derived set.  
+/// Matches Gymnasium's `Discrete(n, start=0)`.
 ///
-/// TODO: Update to support negative values.
+/// # Examples
+///
+/// ```
+/// use gymnasia::spaces::{Discrete, Space};
+///
+/// let space = Discrete::new(3); // {0, 1, 2}
+/// assert!(space.contains(&0));
+/// assert!(space.contains(&2));
+/// assert!(!space.contains(&3));
+///
+/// let space = Discrete::with_start(3, 5); // {5, 6, 7}
+/// assert!(space.contains(&5));
+/// assert!(!space.contains(&4));
+/// ```
 #[derive(Debug, Serialize, PartialEq, PartialOrd, Eq, Ord, Clone)]
-pub struct Discrete(pub usize);
+pub struct Discrete {
+    /// Number of elements in the space.
+    pub n: usize,
+    /// Starting value (inclusive).
+    pub start: i64,
+}
 
 impl Discrete {
-    /// Creates a [`DiscreteRange`] with `n` elements starting at `start`.
-    ///
-    /// This bridges to the Gymnasium v1.x `Discrete(n, start=...)` constructor.
-    pub fn with_start(n: usize, start: isize) -> DiscreteRange {
-        DiscreteRange::new(n, start)
+    /// Create a space `{0, 1, ..., n-1}`.
+    pub fn new(n: usize) -> Self {
+        Self { n, start: 0 }
+    }
+
+    /// Create a space `{start, start+1, ..., start+n-1}`.
+    pub fn with_start(n: usize, start: i64) -> Self {
+        Self { n, start }
     }
 }
 
-impl Space<usize> for Discrete {
-    fn contains(&self, value: usize) -> bool {
-        match *self {
-            Discrete(upper_bound) => value < upper_bound,
-        }
+impl Space for Discrete {
+    type Element = i64;
+
+    fn contains(&self, value: &i64) -> bool {
+        *value >= self.start && *value < self.start + self.n as i64
     }
 }
 
-impl SampleSpace<usize> for Discrete {
+impl SampleSpace for Discrete {
     type Mask = Vec<bool>;
 
-    fn sample<R: Rng>(&self, rng: &mut R, mask: Option<&Self::Mask>) -> usize {
-        let Discrete(n) = *self;
+    fn sample<R: Rng>(&self, rng: &mut R, mask: Option<&Self::Mask>) -> i64 {
         if let Some(mask) = mask {
-            let valid: Vec<usize> = (0..n)
+            let valid: Vec<i64> = (0..self.n)
                 .filter(|&i| mask.get(i).copied().unwrap_or(false))
+                .map(|i| self.start + i as i64)
                 .collect();
             assert!(!valid.is_empty(), "mask must allow at least one action");
             let idx = Uniform::new(0, valid.len()).sample(rng);
             valid[idx]
         } else {
-            Uniform::new(0, n).sample(rng)
+            let idx = Uniform::new(0, self.n).sample(rng);
+            self.start + idx as i64
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Discrete;
-    use crate::spaces::Space;
+    use rand::SeedableRng;
+    use rand_pcg::Pcg64;
+
+    use super::*;
 
     #[test]
-    fn given_value_greater_or_eq_than_upper_bound_when_contains_called_then_returns_false() {
-        let obj = Discrete(3);
-
-        assert!(!obj.contains(3));
-        assert!(!obj.contains(4));
+    fn contains_zero_start() {
+        let space = Discrete::new(3);
+        assert!(space.contains(&0));
+        assert!(space.contains(&2));
+        assert!(!space.contains(&3));
+        assert!(!space.contains(&-1));
     }
 
     #[test]
-    fn given_value_less_than_upper_bound_when_contains_then_returns_true() {
-        let obj = Discrete(3);
+    fn contains_with_start() {
+        let space = Discrete::with_start(3, 5); // {5, 6, 7}
+        assert!(space.contains(&5));
+        assert!(space.contains(&7));
+        assert!(!space.contains(&4));
+        assert!(!space.contains(&8));
+    }
 
-        assert!(obj.contains(1));
-        assert!(obj.contains(2));
+    #[test]
+    fn contains_negative_start() {
+        let space = Discrete::with_start(4, -2); // {-2, -1, 0, 1}
+        assert!(space.contains(&-2));
+        assert!(space.contains(&1));
+        assert!(!space.contains(&-3));
+        assert!(!space.contains(&2));
+    }
+
+    #[test]
+    fn sample_without_mask_stays_in_range() {
+        let space = Discrete::with_start(4, -2);
+        let mut rng = Pcg64::seed_from_u64(42);
+        for _ in 0..100 {
+            let v = space.sample(&mut rng, None);
+            assert!(space.contains(&v), "{v} not in range");
+        }
+    }
+
+    #[test]
+    fn sample_with_mask_respects_mask() {
+        let space = Discrete::with_start(4, 0); // {0, 1, 2, 3}
+        let mask = vec![false, true, false, true]; // only 1 and 3
+        let mut rng = Pcg64::seed_from_u64(42);
+        for _ in 0..100 {
+            let v = space.sample(&mut rng, Some(&mask));
+            assert!(v == 1 || v == 3, "got {v}, expected 1 or 3");
+        }
     }
 }
