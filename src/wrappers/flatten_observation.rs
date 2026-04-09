@@ -5,14 +5,14 @@ use super::Wrapper;
 
 /// Flattens observations to `Vec<f64>` using the [`Flatten`] trait.
 ///
-/// Changes the observation type from `E::Observation` to `Vec<f64>`.
-/// The flattened observation space is computed once at construction.
+/// Changes the observation type from `E::Observation` to `Vec<f64>`
+/// and the observation space to `BoxSpace<Vec<f64>>` with per-element bounds.
 pub struct FlattenObservation<E: Env>
 where
     E::Observation: Flatten,
 {
     env: E,
-    observation_space: BoxSpace<f64>,
+    observation_space: BoxSpace<Vec<f64>>,
 }
 
 impl<E: Env> FlattenObservation<E>
@@ -28,17 +28,7 @@ where
         let inner_space: &BoxSpace<E::Observation> = env.observation_space().as_ref();
         let flat_low = inner_space.low.flatten();
         let flat_high = inner_space.high.flatten();
-        let lo = flat_low
-            .iter()
-            .copied()
-            .reduce(f64::min)
-            .unwrap_or(f64::NEG_INFINITY);
-        let hi = flat_high
-            .iter()
-            .copied()
-            .reduce(f64::max)
-            .unwrap_or(f64::INFINITY);
-        let observation_space = BoxSpace::new(lo, hi);
+        let observation_space = BoxSpace::new(flat_low, flat_high);
         Self {
             env,
             observation_space,
@@ -53,7 +43,7 @@ where
     type Action = E::Action;
     type Observation = Vec<f64>;
     type ActionSpace = E::ActionSpace;
-    type ObservationSpace = BoxSpace<f64>;
+    type ObservationSpace = BoxSpace<Vec<f64>>;
     type ResetOptions = E::ResetOptions;
 
     fn step(&mut self, action: Self::Action) -> StepResult<Vec<f64>> {
@@ -74,7 +64,7 @@ where
         self.env.action_space()
     }
 
-    fn observation_space(&self) -> &BoxSpace<f64> {
+    fn observation_space(&self) -> &BoxSpace<Vec<f64>> {
         &self.observation_space
     }
 
