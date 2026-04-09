@@ -14,7 +14,7 @@
 //!    (a backend-agnostic list of draw commands) from the current state. Always
 //!    compiled — `DrawList` has zero graphics dependencies.
 //!
-//! 3. **[`render::RenderEnv`]** *(requires `render` feature)* — a wrapper that
+//! 3. **`RenderEnv`** *(requires `render` feature)* — a wrapper that
 //!    composes an `Env + Renderable` with a macroquad-backed screen. Implements
 //!    `Env` so it participates in wrapper chains.
 //!
@@ -41,7 +41,7 @@
 pub mod core;
 /// Concrete environment implementations.
 pub mod envs;
-/// Drawing, rendering backend, and the [`RenderEnv`](render::RenderEnv) wrapper.
+/// Drawing, rendering backend, and the `RenderEnv` wrapper.
 pub mod render;
 /// Space descriptors: [`Discrete`](spaces::Discrete), [`BoxSpace`](spaces::BoxSpace), etc.
 pub mod spaces;
