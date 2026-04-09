@@ -88,7 +88,7 @@ impl Screen {
             rows.push(row);
         }
 
-        Renders::SingleRgbArray(RenderFrame::new(rows))
+        Renders::SingleRgbArray(RenderFrame(rows))
     }
 }
 

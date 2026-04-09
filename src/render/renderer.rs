@@ -1,4 +1,3 @@
-use derive_new::new;
 use serde::Serialize;
 
 /// A structure which lazily invokes renders and stores the resulting frames.
@@ -68,14 +67,14 @@ impl Renderer {
 }
 
 /// Defines various palettes capabling of describing the colour of a pixel.
-#[derive(Debug, new, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub enum RenderColor {
     /// Holds the red-green-blue values of some pixel.
     RGB(u8, u8, u8),
 }
 
 /// A surface which holds pixels describing the contents produced during a render.
-#[derive(Debug, new, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord, Serialize)]
 pub struct RenderFrame(pub Vec<Vec<RenderColor>>);
 
 /// A collection of various formats describing the type of content produced during a render.
