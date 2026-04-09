@@ -6,50 +6,60 @@
 
 ## Architecture
 
-The crate is organized into four top-level modules:
+The crate separates simulation from rendering across six top-level modules:
 
 | Module | Purpose |
 |--------|---------|
-| `core` | The `Env` and `Renderable` traits that every environment implements, plus `ActionReward`. |
-| `envs` | Concrete environment implementations (e.g. `cartpole`, `mountain_car`) under `classical_control`. |
-| `spaces` | Value-space descriptors: `BoxR`, `Discrete`, and the `Space` trait. |
-| `utils` | Rendering (`renderer`), seeding (`seeding`), and shared helpers (`custom/`). |
+| `core` | `Env`, `Renderable`, `StepResult`, and `Flatten` traits/types. Zero supertraits on `Env`. |
+| `envs` | Concrete environment implementations under `classical_control` (CartPole, MountainCar). |
+| `spaces` | `BoxSpace<B: Bounded>`, `Discrete`, `MultiDiscrete`, `MultiBinary`, plus `Space`, `SampleSpace`, `Bounded` traits and `Tensor` type. |
+| `render` | Drawing primitives (`DrawList`), macroquad backend (`Screen`), `Renderer` mode logic, and `RenderEnv` wrapper (implements `Env`). |
+| `wrappers` | `Wrapper` trait, `delegate_env!` macro, and 13 composable wrappers: `TimeLimit`, `OrderEnforcing`, `Autoreset`, `RecordEpisodeStatistics`, `ClipReward`, `NormalizeReward`, `TransformReward`, `ClipAction`, `RescaleAction`, `TransformAction`, `FlattenObservation`, `NormalizeObservation`, `TransformObservation`. |
+| `utils` | Seeding (`seeding`), clip function (`clip`), and `O64` type alias (`types`). |
 
-Environments implement `Env` (step, reset, render, close) and `EnvProperties` (action/observation spaces, metadata). An optional `sdl2` feature enables graphical rendering; without it the crate runs headless.
+### Design decisions
+
+- **`Env` has zero supertraits** -- concrete types derive `Clone`, `Debug`, `Serialize` as needed. Wrappers with closures work without restriction.
+- **Wrappers own their data** -- `RecordEpisodeStatistics` exposes `episode_return()`, `TimeLimit` exposes `steps_remaining()`. No info dict.
+- **`BoxSpace<B: Bounded>`** -- generic over the bounds representation. Implement `Bounded` on observation structs, use `f64` for scalars, or `Tensor` for high-dimensional spaces.
+- **`Flatten` is opt-in** -- bidirectional conversion for ML pipelines. Not a bound on `Env`.
+- **`StepResult` uses `f64` reward** -- `O64` (OrderedFloat) stays internal to env physics.
+- **`RenderEnv` implements `Env`** -- participates in wrapper chains.
 
 ## Key Files
 
 | File | Description |
 |------|-------------|
-| `src/lib.rs` | Crate root; re-exports all public modules. |
-| `src/core.rs` | `Env` and `Renderable` traits, `ActionReward`. |
+| `src/core/env.rs` | `Env` trait definition. |
+| `src/core/step_result.rs` | `StepResult<O>` struct. |
+| `src/core/flatten.rs` | `Flatten` trait for ML interop. |
+| `src/core/render.rs` | `Renderable` trait. |
+| `src/spaces/bounded.rs` | `Bounded` trait, `BoxSpace<B>`, `Tensor`. |
+| `src/spaces/discrete.rs` | `Discrete` space with optional start offset. |
+| `src/spaces/multi_discrete.rs` | `MultiDiscrete` space. |
+| `src/spaces/multi_binary.rs` | `MultiBinary` space. |
+| `src/wrappers/mod.rs` | `Wrapper` trait, `delegate_env!` macro, re-exports. |
+| `src/wrappers/time_limit.rs` | `TimeLimit` wrapper (representative of pattern). |
 | `src/envs/classical_control/cartpole.rs` | CartPole environment. |
 | `src/envs/classical_control/mountain_car.rs` | MountainCar environment. |
-| `src/spaces/box_r.rs` | Continuous box space. |
-| `src/spaces/discrete.rs` | Discrete action/observation space. |
-| `src/utils/renderer.rs` | SDL2-based renderer and `RenderMode` enum. |
+| `src/render/render_env.rs` | `RenderEnv` wrapper (implements `Env`). |
+| `src/render/draw.rs` | `DrawList`, `DrawCommand`, `Color`. |
+| `src/render/screen.rs` | Macroquad rendering backend (feature-gated). |
 | `Cargo.toml` | Package metadata, dependencies, and feature flags. |
-| `justfile` | Build, test, lint, and formatting tasks. |
 
 ## Commands
 
 ```bash
-just init          # install deps + git hooks
-just build         # cargo build (with SDL2)
-just build-headless # cargo build --no-default-features
-just test          # cargo test --no-default-features
-just test-all      # cargo test (all features)
-just lint          # cargo clippy (headless)
-just lint-all      # cargo clippy (all features)
-just fmt           # cargo fmt + taplo fmt + alejandra
-just fmt-check     # check formatting without changes
-just check         # fmt-check + lint + test + doc
-just doc           # build docs
+cargo build --no-default-features   # headless build
+cargo build --features render       # with macroquad rendering
+cargo test --no-default-features    # run tests
+cargo bench --no-default-features   # run benchmarks
+cargo doc --no-default-features     # build docs
 ```
 
 ## Code Style
 
 - **Formatting**: `rustfmt` (config in `rustfmt.toml`).
 - **Linting**: `clippy` with all warnings enabled; `dead_code` is denied.
-- **Commit convention**: Angular conventional commits enforced via `sr.yaml` / gitit.
-- **Feature flags**: `sdl2` (default) for rendering, `bundled` to compile SDL2 from source.
+- **Commit convention**: Angular conventional commits enforced via `sr.yaml`.
+- **Feature flags**: `render` for macroquad-based visualization.
