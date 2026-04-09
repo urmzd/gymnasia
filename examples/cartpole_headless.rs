@@ -17,7 +17,7 @@ fn main() {
         let mut current_reward = 0.0_f64;
 
         for _ in 0..475 {
-            let action = rng.gen_range(0..=1);
+            let action: i64 = rng.gen_range(0..=1);
             let state_reward = env.step(action);
             current_reward += state_reward.reward;
 

@@ -30,7 +30,7 @@ async fn main() {
         let mut current_reward = 0.0_f64;
 
         for _ in 0..475 {
-            let action = ::rand::Rng::gen_range(&mut ::rand::thread_rng(), 0..=1);
+            let action: i64 = ::rand::Rng::gen_range(&mut ::rand::thread_rng(), 0..=1);
             let state_reward = renv.step(action);
             current_reward += state_reward.reward;
 

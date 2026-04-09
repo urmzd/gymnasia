@@ -278,6 +278,30 @@ impl Bounded for CartPoleObservation {
             ),
         }
     }
+
+    fn clamp(value: Self, low: &Self, high: &Self) -> Self {
+        CartPoleObservation {
+            x: OrderedFloat(value.x.into_inner().clamp(low.x.into_inner(), high.x.into_inner())),
+            x_dot: OrderedFloat(
+                value
+                    .x_dot
+                    .into_inner()
+                    .clamp(low.x_dot.into_inner(), high.x_dot.into_inner()),
+            ),
+            theta: OrderedFloat(
+                value
+                    .theta
+                    .into_inner()
+                    .clamp(low.theta.into_inner(), high.theta.into_inner()),
+            ),
+            theta_dot: OrderedFloat(
+                value
+                    .theta_dot
+                    .into_inner()
+                    .clamp(low.theta_dot.into_inner(), high.theta_dot.into_inner()),
+            ),
+        }
+    }
 }
 
 impl Flatten for CartPoleObservation {
@@ -315,7 +339,7 @@ pub enum KinematicsIntegrator {
 }
 
 impl Env for CartPoleEnv {
-    type Action = usize;
+    type Action = i64;
     type Observation = CartPoleObservation;
     type ActionSpace = Discrete;
     type ObservationSpace = BoxSpace<CartPoleObservation>;
@@ -323,8 +347,8 @@ impl Env for CartPoleEnv {
 
     fn step(&mut self, action: Self::Action) -> StepResult<Self::Observation> {
         assert!(
-            self.action_space.contains(&(action as i64)),
-            "{} usize invalid",
+            self.action_space.contains(&action),
+            "{} invalid action",
             action
         );
 

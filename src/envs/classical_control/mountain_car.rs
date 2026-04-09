@@ -253,6 +253,23 @@ impl Bounded for MountainCarObservation {
             ),
         }
     }
+
+    fn clamp(value: Self, low: &Self, high: &Self) -> Self {
+        MountainCarObservation {
+            position: OrderedFloat(
+                value
+                    .position
+                    .into_inner()
+                    .clamp(low.position.into_inner(), high.position.into_inner()),
+            ),
+            velocity: OrderedFloat(
+                value
+                    .velocity
+                    .into_inner()
+                    .clamp(low.velocity.into_inner(), high.velocity.into_inner()),
+            ),
+        }
+    }
 }
 
 impl Flatten for MountainCarObservation {
@@ -274,7 +291,7 @@ impl Flatten for MountainCarObservation {
 }
 
 impl Env for MountainCarEnv {
-    type Action = usize;
+    type Action = i64;
     type Observation = MountainCarObservation;
     type ActionSpace = Discrete;
     type ObservationSpace = BoxSpace<MountainCarObservation>;
@@ -282,8 +299,8 @@ impl Env for MountainCarEnv {
 
     fn step(&mut self, action: Self::Action) -> StepResult<Self::Observation> {
         assert!(
-            self.action_space.contains(&(action as i64)),
-            "{} (usize) invalid",
+            self.action_space.contains(&action),
+            "{} invalid action",
             action
         );
 

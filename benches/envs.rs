@@ -10,7 +10,7 @@ fn bench_cartpole_step(c: &mut Criterion) {
 
     c.bench_function("cartpole/step", |b| {
         b.iter(|| {
-            let result = env.step(black_box(1));
+            let result = env.step(black_box(1_i64));
             if result.terminated || result.truncated {
                 env.reset(None, None);
             }
@@ -35,7 +35,7 @@ fn bench_cartpole_episode(c: &mut Criterion) {
         b.iter(|| {
             env.reset(None, None);
             loop {
-                let result = env.step(black_box(1));
+                let result = env.step(black_box(1_i64));
                 if result.terminated || result.truncated {
                     break;
                 }
@@ -50,7 +50,7 @@ fn bench_mountain_car_step(c: &mut Criterion) {
 
     c.bench_function("mountain_car/step", |b| {
         b.iter(|| {
-            let result = env.step(black_box(2));
+            let result = env.step(black_box(2_i64));
             if result.terminated || result.truncated {
                 env.reset(None, None);
             }
@@ -75,7 +75,7 @@ fn bench_mountain_car_episode(c: &mut Criterion) {
         b.iter(|| {
             env.reset(None, None);
             for _ in 0..200 {
-                let result = env.step(black_box(2));
+                let result = env.step(black_box(2_i64));
                 if result.terminated || result.truncated {
                     break;
                 }

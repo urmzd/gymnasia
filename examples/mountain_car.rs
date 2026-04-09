@@ -32,7 +32,7 @@ async fn main() {
             if episode_length > 200 {
                 break;
             }
-            let action = ::rand::Rng::gen_range(&mut ::rand::thread_rng(), 0..3);
+            let action: i64 = ::rand::Rng::gen_range(&mut ::rand::thread_rng(), 0..3);
             let result = renv.step(action);
             episode_length += 1;
             println!("episode_length: {}", episode_length);
