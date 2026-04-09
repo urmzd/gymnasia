@@ -71,9 +71,9 @@ where
             let delta = val - self.running_mean[i];
             self.running_mean[i] += delta / self.count;
             let delta2 = val - self.running_mean[i];
-            self.running_var[i] =
-                (self.running_var[i] + (delta * delta2 - self.running_var[i]) / self.count)
-                    .max(0.0);
+            self.running_var[i] = (self.running_var[i]
+                + (delta * delta2 - self.running_var[i]) / self.count)
+                .max(0.0);
         }
 
         // Normalize using updated statistics

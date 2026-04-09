@@ -281,7 +281,12 @@ impl Bounded for CartPoleObservation {
 
     fn clamp(value: Self, low: &Self, high: &Self) -> Self {
         CartPoleObservation {
-            x: OrderedFloat(value.x.into_inner().clamp(low.x.into_inner(), high.x.into_inner())),
+            x: OrderedFloat(
+                value
+                    .x
+                    .into_inner()
+                    .clamp(low.x.into_inner(), high.x.into_inner()),
+            ),
             x_dot: OrderedFloat(
                 value
                     .x_dot
