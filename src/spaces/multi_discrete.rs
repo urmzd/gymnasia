@@ -69,7 +69,10 @@ impl SampleSpace for MultiDiscrete {
                         .filter(|&j| axis_mask.get(j).copied().unwrap_or(false))
                         .map(|j| s + j as i64)
                         .collect();
-                    assert!(!valid.is_empty(), "mask must allow at least one value per axis");
+                    assert!(
+                        !valid.is_empty(),
+                        "mask must allow at least one value per axis"
+                    );
                     let idx = Uniform::new(0, valid.len()).sample(rng);
                     valid[idx]
                 } else {
