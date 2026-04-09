@@ -1,25 +1,48 @@
 use crate::core::{Env, Flatten, StepResult};
-use crate::spaces::BoxSpace;
+use crate::spaces::{Bounded, BoxSpace};
 
 use super::Wrapper;
 
 /// Flattens observations to `Vec<f64>` using the [`Flatten`] trait.
 ///
 /// Changes the observation type from `E::Observation` to `Vec<f64>`.
+/// The flattened observation space is computed once at construction.
 pub struct FlattenObservation<E: Env>
 where
     E::Observation: Flatten,
 {
     env: E,
+    observation_space: BoxSpace<f64>,
 }
 
 impl<E: Env> FlattenObservation<E>
 where
-    E::Observation: Flatten,
+    E::Observation: Flatten + Bounded,
+    E::ObservationSpace: AsRef<BoxSpace<E::Observation>>,
 {
     /// Wrap `env` with observation flattening.
+    ///
+    /// Computes the flattened observation space from the inner space's
+    /// low/high bounds via [`Flatten::flatten`].
     pub fn new(env: E) -> Self {
-        Self { env }
+        let inner_space: &BoxSpace<E::Observation> = env.observation_space().as_ref();
+        let flat_low = inner_space.low.flatten();
+        let flat_high = inner_space.high.flatten();
+        let lo = flat_low
+            .iter()
+            .copied()
+            .reduce(f64::min)
+            .unwrap_or(f64::NEG_INFINITY);
+        let hi = flat_high
+            .iter()
+            .copied()
+            .reduce(f64::max)
+            .unwrap_or(f64::INFINITY);
+        let observation_space = BoxSpace::new(lo, hi);
+        Self {
+            env,
+            observation_space,
+        }
     }
 }
 
@@ -52,11 +75,7 @@ where
     }
 
     fn observation_space(&self) -> &BoxSpace<f64> {
-        // This is a simplification — the flattened observation space should be
-        // a Box<f64> with appropriate low/high bounds derived from the inner space.
-        // For now we return a reference which requires storing the flattened space.
-        // TODO: Store flattened observation space on construction.
-        unimplemented!("FlattenObservation::observation_space requires stored flattened space")
+        &self.observation_space
     }
 
     fn close(&mut self) {
