@@ -56,9 +56,15 @@ where
         (self.func)(obs)
     }
 
-    fn action_space(&self) -> &Self::ActionSpace { self.env.action_space() }
-    fn observation_space(&self) -> &Self::ObservationSpace { self.env.observation_space() }
-    fn close(&mut self) { self.env.close(); }
+    fn action_space(&self) -> &Self::ActionSpace {
+        self.env.action_space()
+    }
+    fn observation_space(&self) -> &Self::ObservationSpace {
+        self.env.observation_space()
+    }
+    fn close(&mut self) {
+        self.env.close();
+    }
 }
 
 impl<E, F, O> Wrapper for TransformObservation<E, F, O>
@@ -67,7 +73,13 @@ where
     F: Fn(E::Observation) -> O,
 {
     type Inner = E;
-    fn inner(&self) -> &E { &self.env }
-    fn inner_mut(&mut self) -> &mut E { &mut self.env }
-    fn into_inner(self) -> E { self.env }
+    fn inner(&self) -> &E {
+        &self.env
+    }
+    fn inner_mut(&mut self) -> &mut E {
+        &mut self.env
+    }
+    fn into_inner(self) -> E {
+        self.env
+    }
 }

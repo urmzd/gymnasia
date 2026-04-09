@@ -50,9 +50,15 @@ where
         self.env.reset(seed, options)
     }
 
-    fn action_space(&self) -> &Self::ActionSpace { self.env.action_space() }
-    fn observation_space(&self) -> &Self::ObservationSpace { self.env.observation_space() }
-    fn close(&mut self) { self.env.close(); }
+    fn action_space(&self) -> &Self::ActionSpace {
+        self.env.action_space()
+    }
+    fn observation_space(&self) -> &Self::ObservationSpace {
+        self.env.observation_space()
+    }
+    fn close(&mut self) {
+        self.env.close();
+    }
 }
 
 /// Helper trait for extracting bounds from an action space.
@@ -74,7 +80,13 @@ where
     E::ActionSpace: AsBoxBounds<E::Action>,
 {
     type Inner = E;
-    fn inner(&self) -> &E { &self.env }
-    fn inner_mut(&mut self) -> &mut E { &mut self.env }
-    fn into_inner(self) -> E { self.env }
+    fn inner(&self) -> &E {
+        &self.env
+    }
+    fn inner_mut(&mut self) -> &mut E {
+        &mut self.env
+    }
+    fn into_inner(self) -> E {
+        self.env
+    }
 }

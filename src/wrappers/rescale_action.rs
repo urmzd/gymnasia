@@ -21,7 +21,11 @@ where
 {
     /// Wrap `env` so actions in `[new_low, new_high]` are rescaled to env bounds.
     pub fn new(env: E, new_low: f64, new_high: f64) -> Self {
-        Self { env, new_low, new_high }
+        Self {
+            env,
+            new_low,
+            new_high,
+        }
     }
 }
 
@@ -51,9 +55,15 @@ where
         self.env.reset(seed, options)
     }
 
-    fn action_space(&self) -> &Self::ActionSpace { self.env.action_space() }
-    fn observation_space(&self) -> &Self::ObservationSpace { self.env.observation_space() }
-    fn close(&mut self) { self.env.close(); }
+    fn action_space(&self) -> &Self::ActionSpace {
+        self.env.action_space()
+    }
+    fn observation_space(&self) -> &Self::ObservationSpace {
+        self.env.observation_space()
+    }
+    fn close(&mut self) {
+        self.env.close();
+    }
 }
 
 impl<E> Wrapper for RescaleAction<E>
@@ -61,7 +71,13 @@ where
     E: Env<Action = f64>,
 {
     type Inner = E;
-    fn inner(&self) -> &E { &self.env }
-    fn inner_mut(&mut self) -> &mut E { &mut self.env }
-    fn into_inner(self) -> E { self.env }
+    fn inner(&self) -> &E {
+        &self.env
+    }
+    fn inner_mut(&mut self) -> &mut E {
+        &mut self.env
+    }
+    fn into_inner(self) -> E {
+        self.env
+    }
 }

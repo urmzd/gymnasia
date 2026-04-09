@@ -113,7 +113,13 @@ impl<E: Env> Env for RecordEpisodeStatistics<E> {
 
 impl<E: Env> Wrapper for RecordEpisodeStatistics<E> {
     type Inner = E;
-    fn inner(&self) -> &E { &self.env }
-    fn inner_mut(&mut self) -> &mut E { &mut self.env }
-    fn into_inner(self) -> E { self.env }
+    fn inner(&self) -> &E {
+        &self.env
+    }
+    fn inner_mut(&mut self) -> &mut E {
+        &mut self.env
+    }
+    fn into_inner(self) -> E {
+        self.env
+    }
 }

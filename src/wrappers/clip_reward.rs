@@ -12,7 +12,11 @@ pub struct ClipReward<E: Env> {
 impl<E: Env> ClipReward<E> {
     /// Wrap `env` with reward clipping.
     pub fn new(env: E, min_reward: f64, max_reward: f64) -> Self {
-        Self { env, min_reward, max_reward }
+        Self {
+            env,
+            min_reward,
+            max_reward,
+        }
     }
 }
 
@@ -33,14 +37,26 @@ impl<E: Env> Env for ClipReward<E> {
         self.env.reset(seed, options)
     }
 
-    fn action_space(&self) -> &Self::ActionSpace { self.env.action_space() }
-    fn observation_space(&self) -> &Self::ObservationSpace { self.env.observation_space() }
-    fn close(&mut self) { self.env.close(); }
+    fn action_space(&self) -> &Self::ActionSpace {
+        self.env.action_space()
+    }
+    fn observation_space(&self) -> &Self::ObservationSpace {
+        self.env.observation_space()
+    }
+    fn close(&mut self) {
+        self.env.close();
+    }
 }
 
 impl<E: Env> Wrapper for ClipReward<E> {
     type Inner = E;
-    fn inner(&self) -> &E { &self.env }
-    fn inner_mut(&mut self) -> &mut E { &mut self.env }
-    fn into_inner(self) -> E { self.env }
+    fn inner(&self) -> &E {
+        &self.env
+    }
+    fn inner_mut(&mut self) -> &mut E {
+        &mut self.env
+    }
+    fn into_inner(self) -> E {
+        self.env
+    }
 }

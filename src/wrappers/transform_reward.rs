@@ -32,14 +32,26 @@ impl<E: Env, F: Fn(f64) -> f64> Env for TransformReward<E, F> {
         self.env.reset(seed, options)
     }
 
-    fn action_space(&self) -> &Self::ActionSpace { self.env.action_space() }
-    fn observation_space(&self) -> &Self::ObservationSpace { self.env.observation_space() }
-    fn close(&mut self) { self.env.close(); }
+    fn action_space(&self) -> &Self::ActionSpace {
+        self.env.action_space()
+    }
+    fn observation_space(&self) -> &Self::ObservationSpace {
+        self.env.observation_space()
+    }
+    fn close(&mut self) {
+        self.env.close();
+    }
 }
 
 impl<E: Env, F: Fn(f64) -> f64> Wrapper for TransformReward<E, F> {
     type Inner = E;
-    fn inner(&self) -> &E { &self.env }
-    fn inner_mut(&mut self) -> &mut E { &mut self.env }
-    fn into_inner(self) -> E { self.env }
+    fn inner(&self) -> &E {
+        &self.env
+    }
+    fn inner_mut(&mut self) -> &mut E {
+        &mut self.env
+    }
+    fn into_inner(self) -> E {
+        self.env
+    }
 }
