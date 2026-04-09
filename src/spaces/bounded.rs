@@ -39,6 +39,18 @@ pub trait Bounded: Sized + Clone + Debug {
 
     /// Sample uniformly within `[low, high]` element-wise.
     fn sample_uniform<R: Rng>(rng: &mut R, low: &Self, high: &Self) -> Self;
+
+    /// Clamp `value` element-wise to `[low, high]`.
+    ///
+    /// The default implementation returns `low` if out of bounds — override
+    /// this for proper element-wise clamping on composite types.
+    fn clamp(value: Self, low: &Self, high: &Self) -> Self {
+        if Self::in_bounds(&value, low, high) {
+            value
+        } else {
+            low.clone()
+        }
+    }
 }
 
 /// A bounded continuous space defined by low/high bounds.
@@ -72,6 +84,12 @@ impl<B: Bounded> BoxSpace<B> {
     }
 }
 
+impl<B: Bounded> AsRef<BoxSpace<B>> for BoxSpace<B> {
+    fn as_ref(&self) -> &BoxSpace<B> {
+        self
+    }
+}
+
 impl<B: Bounded> Space for BoxSpace<B> {
     type Element = B;
 
@@ -98,6 +116,10 @@ impl Bounded for f64 {
     fn sample_uniform<R: Rng>(rng: &mut R, low: &Self, high: &Self) -> Self {
         rng.gen_range(*low..=*high)
     }
+
+    fn clamp(value: Self, low: &Self, high: &Self) -> Self {
+        value.clamp(*low, *high)
+    }
 }
 
 impl Bounded for f32 {
@@ -108,13 +130,17 @@ impl Bounded for f32 {
     fn sample_uniform<R: Rng>(rng: &mut R, low: &Self, high: &Self) -> Self {
         rng.gen_range(*low..=*high)
     }
+
+    fn clamp(value: Self, low: &Self, high: &Self) -> Self {
+        value.clamp(*low, *high)
+    }
 }
 
 /// A flat array with shape metadata, for high-dimensional spaces.
 ///
 /// Use this as the bound type in `BoxSpace<Tensor>` for image-based
 /// or large state-vector observations.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Tensor {
     /// The flat data.
     pub data: Vec<f64>,
@@ -153,6 +179,8 @@ impl Tensor {
 
 impl Bounded for Tensor {
     fn in_bounds(value: &Self, low: &Self, high: &Self) -> bool {
+        assert_eq!(value.shape, low.shape, "Tensor shape mismatch");
+        assert_eq!(value.shape, high.shape, "Tensor shape mismatch");
         value
             .data
             .iter()
@@ -161,6 +189,7 @@ impl Bounded for Tensor {
     }
 
     fn sample_uniform<R: Rng>(rng: &mut R, low: &Self, high: &Self) -> Self {
+        assert_eq!(low.shape, high.shape, "Tensor shape mismatch");
         let data: Vec<f64> = low
             .data
             .iter()
@@ -170,6 +199,20 @@ impl Bounded for Tensor {
         Tensor {
             data,
             shape: low.shape.clone(),
+        }
+    }
+
+    fn clamp(value: Self, low: &Self, high: &Self) -> Self {
+        assert_eq!(value.shape, low.shape, "Tensor shape mismatch");
+        let data: Vec<f64> = value
+            .data
+            .iter()
+            .zip(low.data.iter().zip(high.data.iter()))
+            .map(|(v, (lo, hi))| v.clamp(*lo, *hi))
+            .collect();
+        Tensor {
+            data,
+            shape: value.shape,
         }
     }
 }
