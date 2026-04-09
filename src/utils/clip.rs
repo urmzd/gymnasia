@@ -11,7 +11,7 @@ pub fn clip<T: PartialEq + PartialOrd>(value: T, left_bound: T, right_bound: T) 
 
 #[cfg(test)]
 mod tests {
-    use crate::utils::custom::util_fns::clip;
+    use super::clip;
 
     #[test]
     fn given_bounds_when_value_is_beyond_upper_bound_then_upper_bound_returned() {

@@ -1,7 +1,7 @@
 use macroquad::prelude::*;
 
-use crate::utils::{
-    custom::draw::{Color as DrawColor, DrawCommand, DrawList},
+use super::{
+    draw::{Color as DrawColor, DrawCommand, DrawList},
     renderer::{RenderColor, RenderFrame, RenderMode, Renders},
 };
 
@@ -18,9 +18,6 @@ impl Screen {
     /// The caller (example main) is responsible for calling `next_frame().await`
     /// after this returns for Human mode.
     pub fn execute(&self, draw_list: &DrawList, mode: RenderMode) -> Renders {
-        // Map world coordinates (0,0)–(width,height) to the screen.
-        // y=0 is at the bottom, y=height at the top (standard math convention,
-        // matching OpenAI Gym's coordinate system).
         let cam = Camera2D::from_display_rect(macroquad::math::Rect::new(
             0.0,
             0.0,
@@ -81,7 +78,6 @@ impl Screen {
         let h = image.height() as usize;
         let bytes = image.bytes;
 
-        // macroquad returns RGBA top-to-bottom; we extract RGB only.
         let mut rows: Vec<Vec<RenderColor>> = Vec::with_capacity(h);
         for y in 0..h {
             let mut row = Vec::with_capacity(w);

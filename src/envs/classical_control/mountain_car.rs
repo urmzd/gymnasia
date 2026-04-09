@@ -1,29 +1,15 @@
-use std::fmt::Debug;
-
 use derivative::Derivative;
-use derive_new::new;
 use num_traits::Float;
-use ordered_float::{OrderedFloat, UniformOrdered};
-use rand::{
-    distributions::{
-        uniform::{SampleUniform, UniformSampler},
-        Uniform,
-    },
-    prelude::Distribution,
-    Rng,
-};
+use ordered_float::OrderedFloat;
+use rand::Rng;
 use rand_pcg::Pcg64;
 use serde::Serialize;
 
 use crate::{
-    core::{ActionReward, Env, Renderable},
-    spaces::{self, BoxR, Discrete, Space},
-    utils::custom::{
-        draw::{rotate_point, Color, DrawCommand, DrawList},
-        traits::Sample,
-        types::O64,
-        util_fns::clip,
-    },
+    core::{Env, Flatten, Renderable, StepResult},
+    render::draw::{rotate_point, Color, DrawCommand, DrawList},
+    spaces::{Bounded, BoxSpace, Discrete, Space},
+    utils::{clip::clip, types::O64},
 };
 
 /// An implementation of the classical reinforcement learning environment, mountain car.
@@ -55,9 +41,9 @@ pub struct MountainCarEnv {
     pub gravity: O64,
 
     /// The set of actions which can be taken.
-    pub action_space: spaces::Discrete,
+    pub action_space: Discrete,
     /// The range of values that can be observed.
-    pub observation_space: spaces::BoxR<MountainCarObservation>,
+    pub observation_space: BoxSpace<MountainCarObservation>,
 
     /// The state of the environment.
     pub state: MountainCarObservation,
@@ -90,13 +76,19 @@ impl MountainCarEnv {
         let force = OrderedFloat(0.001);
         let gravity = OrderedFloat(0.0025);
 
-        let low = MountainCarObservation::new(min_position, -max_speed);
-        let high = MountainCarObservation::new(max_position, max_speed);
+        let low = MountainCarObservation {
+            position: min_position,
+            velocity: -max_speed,
+        };
+        let high = MountainCarObservation {
+            position: max_position,
+            velocity: max_speed,
+        };
 
-        let state = MountainCarObservation::sample_between(&mut rng, None);
+        let state = MountainCarObservation::sample_default(&mut rng);
 
-        let action_space = spaces::Discrete(3);
-        let observation_space = spaces::BoxR::new(low, high);
+        let action_space = Discrete::new(3);
+        let observation_space = BoxSpace::new(low, high);
 
         Self {
             min_position,
@@ -220,7 +212,7 @@ impl Renderable for MountainCarEnv {
 }
 
 /// Utility structure intended to reduce confusion around meaning of properties.
-#[derive(Debug, new, Copy, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MountainCarObservation {
     /// The position the car exists on the mountain.
     pub position: O64,
@@ -228,86 +220,69 @@ pub struct MountainCarObservation {
     pub velocity: O64,
 }
 
-/// The structure responsible for uniformly sampling a mountain car observation.
-pub struct UniformMountainCarObservation {
-    /// The sampler responsible for deriving a position.
-    pub position_sampler: UniformOrdered<f64>,
+impl MountainCarObservation {
+    /// Sample from default initial bounds (position in [-0.6, -0.4], velocity = 0).
+    fn sample_default<R: Rng>(rng: &mut R) -> Self {
+        let low = MountainCarObservation {
+            position: OrderedFloat(-0.6),
+            velocity: OrderedFloat(0.),
+        };
+        let high = MountainCarObservation {
+            position: OrderedFloat(-0.4),
+            velocity: OrderedFloat(0.),
+        };
+        MountainCarObservation::sample_uniform(rng, &low, &high)
+    }
 }
 
-impl UniformSampler for UniformMountainCarObservation {
-    type X = MountainCarObservation;
-
-    fn new<B1, B2>(low: B1, high: B2) -> Self
-    where
-        B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
-        B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
-    {
-        UniformMountainCarObservation {
-            position_sampler: UniformOrdered::new(low.borrow().position, high.borrow().position),
-        }
+impl Bounded for MountainCarObservation {
+    fn in_bounds(value: &Self, low: &Self, high: &Self) -> bool {
+        value.position >= low.position
+            && value.position <= high.position
+            && value.velocity >= low.velocity
+            && value.velocity <= high.velocity
     }
 
-    fn new_inclusive<B1, B2>(low: B1, high: B2) -> Self
-    where
-        B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
-        B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
-    {
-        UniformMountainCarObservation {
-            position_sampler: UniformOrdered::new_inclusive(
-                low.borrow().position,
-                high.borrow().position,
+    fn sample_uniform<R: Rng>(rng: &mut R, low: &Self, high: &Self) -> Self {
+        MountainCarObservation {
+            position: OrderedFloat(
+                rng.gen_range(low.position.into_inner()..=high.position.into_inner()),
+            ),
+            velocity: OrderedFloat(
+                rng.gen_range(low.velocity.into_inner()..=high.velocity.into_inner()),
             ),
         }
     }
+}
 
-    fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
+impl Flatten for MountainCarObservation {
+    fn flat_dim() -> usize {
+        2
+    }
+
+    fn flatten(&self) -> Vec<f64> {
+        vec![self.position.into_inner(), self.velocity.into_inner()]
+    }
+
+    fn unflatten(flat: &[f64]) -> Self {
+        assert_eq!(flat.len(), 2);
         MountainCarObservation {
-            position: self.position_sampler.sample(rng),
-            velocity: OrderedFloat(0.),
+            position: OrderedFloat(flat[0]),
+            velocity: OrderedFloat(flat[1]),
         }
-    }
-}
-
-impl SampleUniform for MountainCarObservation {
-    type Sampler = UniformMountainCarObservation;
-}
-
-impl Sample for MountainCarObservation {
-    fn sample_between<R: Rng>(rng: &mut R, bounds: Option<BoxR<Self>>) -> Self {
-        let BoxR { low, high } = bounds.unwrap_or({
-            BoxR::new(
-                MountainCarObservation {
-                    position: OrderedFloat(-0.6),
-                    velocity: OrderedFloat(0.),
-                },
-                MountainCarObservation {
-                    position: OrderedFloat(-0.4),
-                    velocity: OrderedFloat(0.),
-                },
-            )
-        });
-
-        Uniform::new(low, high).sample(rng)
-    }
-}
-
-impl From<MountainCarObservation> for Vec<f64> {
-    fn from(o: MountainCarObservation) -> Self {
-        vec![o.position.into_inner(), o.velocity.into_inner()]
     }
 }
 
 impl Env for MountainCarEnv {
     type Action = usize;
     type Observation = MountainCarObservation;
-    type Info = ();
-    type ResetInfo = ();
     type ActionSpace = Discrete;
-    type ObservationSpace = spaces::BoxR<MountainCarObservation>;
+    type ObservationSpace = BoxSpace<MountainCarObservation>;
+    type ResetOptions = Option<BoxSpace<MountainCarObservation>>;
 
-    fn step(&mut self, action: Self::Action) -> ActionReward<Self::Observation, Self::Info> {
+    fn step(&mut self, action: Self::Action) -> StepResult<Self::Observation> {
         assert!(
-            self.action_space.contains(action),
+            self.action_space.contains(&(action as i64)),
             "{} (usize) invalid",
             action
         );
@@ -327,35 +302,36 @@ impl Env for MountainCarEnv {
         }
 
         let terminated = position >= self.goal_position && velocity >= self.goal_velocity;
-        let reward: O64 = OrderedFloat(-1.0);
 
         self.state = MountainCarObservation { position, velocity };
 
-        ActionReward {
+        StepResult {
             observation: self.state,
-            reward,
+            reward: -1.0,
             terminated,
             truncated: false,
-            info: None,
         }
     }
 
     fn reset(
         &mut self,
         seed: Option<u64>,
-        return_info: bool,
-        options: Option<BoxR<Self::Observation>>,
-    ) -> (Self::Observation, Option<Self::ResetInfo>) {
+        options: Self::ResetOptions,
+    ) -> Self::Observation {
         let (rand_random, _) = crate::utils::seeding::rand_random(seed);
         self.rand_random = rand_random;
 
-        self.state = MountainCarObservation::sample_between(&mut self.rand_random, options);
-
-        if return_info {
-            (self.state, Some(()))
+        self.state = if let Some(bounds) = options {
+            MountainCarObservation::sample_uniform(
+                &mut self.rand_random,
+                &bounds.low,
+                &bounds.high,
+            )
         } else {
-            (self.state, None)
-        }
+            MountainCarObservation::sample_default(&mut self.rand_random)
+        };
+
+        self.state
     }
 
     fn action_space(&self) -> &Self::ActionSpace {
@@ -364,9 +340,5 @@ impl Env for MountainCarEnv {
 
     fn observation_space(&self) -> &Self::ObservationSpace {
         &self.observation_space
-    }
-
-    fn rand_random(&self) -> &Pcg64 {
-        &self.rand_random
     }
 }

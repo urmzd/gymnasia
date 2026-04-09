@@ -1,10 +1,10 @@
-/// An interface that deals with subspaces.
-pub trait Space<T>
-where
-    T: PartialOrd + PartialEq,
-{
-    /// Checks for the existence of a value within the defined subspace.
-    ///
-    /// Returns `true` if the value exists, `false` otherwise.
-    fn contains(&self, value: T) -> bool;
+use std::fmt::Debug;
+
+/// A space describes the set of valid values for actions or observations.
+pub trait Space: Clone + Debug {
+    /// The type of elements in this space.
+    type Element;
+
+    /// Check whether `value` belongs to this space.
+    fn contains(&self, value: &Self::Element) -> bool;
 }

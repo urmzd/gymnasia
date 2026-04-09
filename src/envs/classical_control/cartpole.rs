@@ -1,27 +1,17 @@
-use std::{f64::consts::PI, ops::Neg};
+use std::f64::consts::PI;
 
-use derive_new::new;
 use log::warn;
-use ordered_float::{Float, OrderedFloat, UniformOrdered};
-use rand::{
-    distributions::{
-        uniform::{SampleUniform, UniformSampler},
-        Uniform,
-    },
-    prelude::Distribution,
-    Rng,
-};
+use num_traits::Float;
+use ordered_float::OrderedFloat;
+use rand::Rng;
 use rand_pcg::Pcg64;
 use serde::Serialize;
 
 use crate::{
-    core::{ActionReward, Env, Renderable},
-    spaces::{BoxR, Discrete, Space},
-    utils::custom::{
-        draw::{rotate_point, Color, DrawCommand, DrawList},
-        traits::Sample,
-        types::O64,
-    },
+    core::{Env, Flatten, Renderable, StepResult},
+    render::draw::{rotate_point, Color, DrawCommand, DrawList},
+    spaces::{Bounded, BoxSpace, Discrete, Space},
+    utils::types::O64,
 };
 
 /// An environment which implements the cart pole problem described in
@@ -35,15 +25,15 @@ use crate::{
 ///
 /// The episode ends when any of the following conditions occur:
 ///
-/// 1. Termination: [`CartPoleObservation.theta`] is greater than +/-12.0 (pole has fallen).
-/// 2. Termination: [`CartPoleObservation.x`] is greater than +/-2.4 (cart is outside bounds).
+/// 1. Termination: [`CartPoleObservation::theta`] is greater than +/-12.0 (pole has fallen).
+/// 2. Termination: [`CartPoleObservation::x`] is greater than +/-2.4 (cart is outside bounds).
 /// 3. Truncation: Episode length is greater than 500.
 #[derive(Debug, Clone, Serialize)]
 pub struct CartPoleEnv {
     /// The available actions that can be taken.
     pub action_space: Discrete,
     /// The range of values that can be observed.
-    pub observation_space: BoxR<CartPoleObservation>,
+    pub observation_space: BoxSpace<CartPoleObservation>,
     /// The current state of the environment.
     pub state: CartPoleObservation,
     /// The gravity constant applied to the environment.
@@ -90,16 +80,22 @@ impl CartPoleEnv {
         let theta_threshold_radians = OrderedFloat(12. * 2. * PI / 360.);
         let x_threshold = OrderedFloat(2.4);
 
-        let high = CartPoleObservation::new(
-            x_threshold * 2.,
-            OrderedFloat(f64::INFINITY),
-            theta_threshold_radians * 2.,
-            OrderedFloat(f64::INFINITY),
-        );
+        let high = CartPoleObservation {
+            x: x_threshold * 2.,
+            x_dot: OrderedFloat(f64::INFINITY),
+            theta: theta_threshold_radians * 2.,
+            theta_dot: OrderedFloat(f64::INFINITY),
+        };
+        let low = CartPoleObservation {
+            x: -high.x,
+            x_dot: -high.x_dot,
+            theta: -high.theta,
+            theta_dot: -high.theta_dot,
+        };
 
-        let action_space = Discrete(2);
-        let observation_space = BoxR::new(-high, high);
-        let state = CartPoleObservation::sample_between(&mut rand_random, None);
+        let action_space = Discrete::new(2);
+        let observation_space = BoxSpace::new(low, high);
+        let state = CartPoleObservation::sample_default(&mut rand_random);
 
         Self {
             gravity,
@@ -227,105 +223,84 @@ impl Renderable for CartPoleEnv {
     }
 }
 
-/// The sampler responsible for generating an observation using uniform probability.
-pub struct UniformCartPoleObservation {
-    x_sampler: UniformOrdered<f64>,
-    x_dot_sampler: UniformOrdered<f64>,
-    theta_sampler: UniformOrdered<f64>,
-    theta_dot_sampler: UniformOrdered<f64>,
+/// Defines the state found in the cart pole environment.
+#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+pub struct CartPoleObservation {
+    /// Cart position.
+    pub x: O64,
+    /// Cart velocity.
+    pub x_dot: O64,
+    /// Pole angle (radians).
+    pub theta: O64,
+    /// Pole angular velocity.
+    pub theta_dot: O64,
 }
 
-impl SampleUniform for CartPoleObservation {
-    type Sampler = UniformCartPoleObservation;
+impl CartPoleObservation {
+    /// Sample from default initial bounds `(-0.05, 0.05)`.
+    fn sample_default<R: Rng>(rng: &mut R) -> Self {
+        let bound = 0.05;
+        let low = CartPoleObservation {
+            x: OrderedFloat(-bound),
+            x_dot: OrderedFloat(-bound),
+            theta: OrderedFloat(-bound),
+            theta_dot: OrderedFloat(-bound),
+        };
+        let high = CartPoleObservation {
+            x: OrderedFloat(bound),
+            x_dot: OrderedFloat(bound),
+            theta: OrderedFloat(bound),
+            theta_dot: OrderedFloat(bound),
+        };
+        CartPoleObservation::sample_uniform(rng, &low, &high)
+    }
 }
 
-impl UniformSampler for UniformCartPoleObservation {
-    type X = CartPoleObservation;
-
-    fn new<B1, B2>(low: B1, high: B2) -> Self
-    where
-        B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
-        B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
-    {
-        UniformCartPoleObservation {
-            x_sampler: UniformOrdered::new(low.borrow().x, high.borrow().x),
-            x_dot_sampler: UniformOrdered::new(low.borrow().x_dot, high.borrow().x_dot),
-            theta_sampler: UniformOrdered::new(low.borrow().theta, high.borrow().theta),
-            theta_dot_sampler: UniformOrdered::new(low.borrow().theta_dot, high.borrow().theta_dot),
-        }
+impl Bounded for CartPoleObservation {
+    fn in_bounds(value: &Self, low: &Self, high: &Self) -> bool {
+        value.x >= low.x
+            && value.x <= high.x
+            && value.x_dot >= low.x_dot
+            && value.x_dot <= high.x_dot
+            && value.theta >= low.theta
+            && value.theta <= high.theta
+            && value.theta_dot >= low.theta_dot
+            && value.theta_dot <= high.theta_dot
     }
 
-    fn new_inclusive<B1, B2>(low: B1, high: B2) -> Self
-    where
-        B1: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
-        B2: rand::distributions::uniform::SampleBorrow<Self::X> + Sized,
-    {
-        UniformCartPoleObservation {
-            x_sampler: UniformOrdered::new_inclusive(low.borrow().x, high.borrow().x),
-            x_dot_sampler: UniformOrdered::new_inclusive(low.borrow().x_dot, high.borrow().x_dot),
-            theta_sampler: UniformOrdered::new_inclusive(low.borrow().theta, high.borrow().theta),
-            theta_dot_sampler: UniformOrdered::new_inclusive(
-                low.borrow().theta_dot,
-                high.borrow().theta_dot,
+    fn sample_uniform<R: Rng>(rng: &mut R, low: &Self, high: &Self) -> Self {
+        CartPoleObservation {
+            x: OrderedFloat(rng.gen_range(low.x.into_inner()..=high.x.into_inner())),
+            x_dot: OrderedFloat(rng.gen_range(low.x_dot.into_inner()..=high.x_dot.into_inner())),
+            theta: OrderedFloat(rng.gen_range(low.theta.into_inner()..=high.theta.into_inner())),
+            theta_dot: OrderedFloat(
+                rng.gen_range(low.theta_dot.into_inner()..=high.theta_dot.into_inner()),
             ),
         }
     }
+}
 
-    fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
-        CartPoleObservation {
-            x: self.x_sampler.sample(rng),
-            x_dot: self.x_dot_sampler.sample(rng),
-            theta: self.theta_sampler.sample(rng),
-            theta_dot: self.theta_dot_sampler.sample(rng),
-        }
+impl Flatten for CartPoleObservation {
+    fn flat_dim() -> usize {
+        4
     }
-}
 
-/// Defines the state found in the cart pole environment.
-#[derive(new, Debug, Clone, Copy, Serialize, PartialEq, Eq)]
-pub struct CartPoleObservation {
-    x: O64,
-    x_dot: O64,
-    theta: O64,
-    theta_dot: O64,
-}
-
-impl From<CartPoleObservation> for Vec<f64> {
-    fn from(observation: CartPoleObservation) -> Self {
+    fn flatten(&self) -> Vec<f64> {
         vec![
-            observation.x.into_inner(),
-            observation.x_dot.into_inner(),
-            observation.theta.into_inner(),
-            observation.theta_dot.into_inner(),
+            self.x.into_inner(),
+            self.x_dot.into_inner(),
+            self.theta.into_inner(),
+            self.theta_dot.into_inner(),
         ]
     }
-}
 
-impl Sample for CartPoleObservation {
-    fn sample_between<R: Rng>(rng: &mut R, bounds: Option<BoxR<Self>>) -> Self {
-        let BoxR { low, high } = bounds.unwrap_or({
-            let observation_bound = CartPoleObservation::new(
-                OrderedFloat(0.05),
-                OrderedFloat(0.05),
-                OrderedFloat(0.05),
-                OrderedFloat(0.05),
-            );
-            BoxR::new(-observation_bound, observation_bound)
-        });
-
-        Uniform::new(low, high).sample(rng)
-    }
-}
-
-impl Neg for CartPoleObservation {
-    type Output = CartPoleObservation;
-
-    fn neg(self) -> Self::Output {
+    fn unflatten(flat: &[f64]) -> Self {
+        assert_eq!(flat.len(), 4);
         CartPoleObservation {
-            x: -self.x,
-            x_dot: -self.x_dot,
-            theta: -self.theta,
-            theta_dot: -self.theta_dot,
+            x: OrderedFloat(flat[0]),
+            x_dot: OrderedFloat(flat[1]),
+            theta: OrderedFloat(flat[2]),
+            theta_dot: OrderedFloat(flat[3]),
         }
     }
 }
@@ -342,14 +317,13 @@ pub enum KinematicsIntegrator {
 impl Env for CartPoleEnv {
     type Action = usize;
     type Observation = CartPoleObservation;
-    type Info = ();
-    type ResetInfo = ();
     type ActionSpace = Discrete;
-    type ObservationSpace = BoxR<CartPoleObservation>;
+    type ObservationSpace = BoxSpace<CartPoleObservation>;
+    type ResetOptions = Option<BoxSpace<CartPoleObservation>>;
 
-    fn step(&mut self, action: Self::Action) -> ActionReward<Self::Observation, Self::Info> {
+    fn step(&mut self, action: Self::Action) -> StepResult<Self::Observation> {
         assert!(
-            self.action_space.contains(action),
+            self.action_space.contains(&(action as i64)),
             "{} usize invalid",
             action
         );
@@ -402,42 +376,40 @@ impl Env for CartPoleEnv {
             || theta > self.theta_threshold_radians;
 
         let reward = if !terminated {
-            OrderedFloat(1.0)
+            1.0
         } else if self.steps_beyond_terminated.is_none() {
             self.steps_beyond_terminated = Some(0);
-            OrderedFloat(1.0)
+            1.0
         } else {
             warn!("Calling step after termination may result in undefined behaviour. Consider reseting.");
             self.steps_beyond_terminated = self.steps_beyond_terminated.map(|step| step + 1);
-            OrderedFloat(0.)
+            0.0
         };
 
-        ActionReward {
+        StepResult {
             observation: self.state,
             reward,
             terminated,
             truncated: false,
-            info: Some(()),
         }
     }
 
     fn reset(
         &mut self,
         seed: Option<u64>,
-        return_info: bool,
-        options: Option<BoxR<Self::Observation>>,
-    ) -> (Self::Observation, Option<Self::ResetInfo>) {
+        options: Self::ResetOptions,
+    ) -> Self::Observation {
         let (rand_random, _) = crate::utils::seeding::rand_random(seed);
         self.rand_random = rand_random;
 
-        self.state = CartPoleObservation::sample_between(&mut self.rand_random, options);
+        self.state = if let Some(bounds) = options {
+            CartPoleObservation::sample_uniform(&mut self.rand_random, &bounds.low, &bounds.high)
+        } else {
+            CartPoleObservation::sample_default(&mut self.rand_random)
+        };
         self.steps_beyond_terminated = None;
 
-        if return_info {
-            (self.state, Some(()))
-        } else {
-            (self.state, None)
-        }
+        self.state
     }
 
     fn action_space(&self) -> &Self::ActionSpace {
@@ -446,9 +418,5 @@ impl Env for CartPoleEnv {
 
     fn observation_space(&self) -> &Self::ObservationSpace {
         &self.observation_space
-    }
-
-    fn rand_random(&self) -> &Pcg64 {
-        &self.rand_random
     }
 }

@@ -1,6 +1,6 @@
 use gymnasia::{
-    envs::classical_control::mountain_car::MountainCarEnv, render::RenderEnv,
-    utils::renderer::RenderMode,
+    envs::classical_control::mountain_car::MountainCarEnv,
+    render::{render_env::RenderEnv, renderer::RenderMode},
 };
 use macroquad::prelude::*;
 
@@ -16,9 +16,11 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    use gymnasia::core::Env;
+
     let env = MountainCarEnv::new();
     let mut renv = RenderEnv::new(env, RenderMode::Human);
-    renv.reset(None, false, None);
+    renv.reset(None, None);
     next_frame().await;
 
     const N: usize = 15;
@@ -42,6 +44,6 @@ async fn main() {
             }
         }
 
-        renv.reset(None, false, None);
+        renv.reset(None, None);
     }
 }
