@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::core::{Env, StepResult};
 
 use super::Wrapper;
@@ -13,10 +15,8 @@ pub struct RecordEpisodeStatistics<E: Env> {
     episode_return: f64,
     episode_length: usize,
     episode_count: usize,
-    /// Returns from completed episodes (ring buffer).
-    return_history: Vec<f64>,
-    /// Lengths from completed episodes (ring buffer).
-    length_history: Vec<usize>,
+    return_history: VecDeque<f64>,
+    length_history: VecDeque<usize>,
     buffer_length: usize,
 }
 
@@ -33,8 +33,8 @@ impl<E: Env> RecordEpisodeStatistics<E> {
             episode_return: 0.0,
             episode_length: 0,
             episode_count: 0,
-            return_history: Vec::with_capacity(buffer_length),
-            length_history: Vec::with_capacity(buffer_length),
+            return_history: VecDeque::with_capacity(buffer_length),
+            length_history: VecDeque::with_capacity(buffer_length),
             buffer_length,
         }
     }
@@ -55,23 +55,23 @@ impl<E: Env> RecordEpisodeStatistics<E> {
     }
 
     /// Returns from recent completed episodes.
-    pub fn return_history(&self) -> &[f64] {
+    pub fn return_history(&self) -> &VecDeque<f64> {
         &self.return_history
     }
 
     /// Lengths of recent completed episodes.
-    pub fn length_history(&self) -> &[usize] {
+    pub fn length_history(&self) -> &VecDeque<usize> {
         &self.length_history
     }
 
     fn record_episode(&mut self) {
         self.episode_count += 1;
         if self.return_history.len() >= self.buffer_length {
-            self.return_history.remove(0);
-            self.length_history.remove(0);
+            self.return_history.pop_front();
+            self.length_history.pop_front();
         }
-        self.return_history.push(self.episode_return);
-        self.length_history.push(self.episode_length);
+        self.return_history.push_back(self.episode_return);
+        self.length_history.push_back(self.episode_length);
     }
 }
 
