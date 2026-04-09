@@ -176,18 +176,21 @@ impl Bounded for MyObs {
     fn sample_uniform<R: rand::Rng>(rng: &mut R, lo: &Self, hi: &Self) -> Self {
         MyObs { x: rng.gen_range(lo.x..=hi.x), y: rng.gen_range(lo.y..=hi.y) }
     }
+    fn clamp(v: Self, lo: &Self, hi: &Self) -> Self {
+        MyObs { x: v.x.clamp(lo.x, hi.x), y: v.y.clamp(lo.y, hi.y) }
+    }
 }
 
 // 3. Implement Env
 struct MyEnv { /* ... */ }
 impl Env for MyEnv {
-    type Action = usize;
+    type Action = i64;
     type Observation = MyObs;
     type ActionSpace = Discrete;
     type ObservationSpace = BoxSpace<MyObs>;
     type ResetOptions = ();
     // ...
-#   fn step(&mut self, _: usize) -> StepResult<MyObs> { todo!() }
+#   fn step(&mut self, _: i64) -> StepResult<MyObs> { todo!() }
 #   fn reset(&mut self, _: Option<u64>, _: ()) -> MyObs { todo!() }
 #   fn action_space(&self) -> &Discrete { todo!() }
 #   fn observation_space(&self) -> &BoxSpace<MyObs> { todo!() }
