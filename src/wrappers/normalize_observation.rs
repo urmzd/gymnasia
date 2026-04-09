@@ -7,6 +7,9 @@ use super::Wrapper;
 ///
 /// Requires `E::Observation: Flatten` — normalization operates on the
 /// flat representation and reconstructs the typed observation.
+///
+/// Statistics are initialized lazily from the first observation, so this
+/// wrapper works regardless of what `flat_dim()` returns.
 pub struct NormalizeObservation<E: Env>
 where
     E::Observation: Flatten,
@@ -16,6 +19,7 @@ where
     running_mean: Vec<f64>,
     running_var: Vec<f64>,
     count: f64,
+    initialized: bool,
 }
 
 impl<E: Env> NormalizeObservation<E>
@@ -29,13 +33,13 @@ where
 
     /// Wrap with a custom epsilon for numerical stability.
     pub fn with_epsilon(env: E, epsilon: f64) -> Self {
-        let dim = E::Observation::flat_dim();
         Self {
             env,
             epsilon,
-            running_mean: vec![0.0; dim],
-            running_var: vec![1.0; dim],
+            running_mean: Vec::new(),
+            running_var: Vec::new(),
             count: 0.0,
+            initialized: false,
         }
     }
 
@@ -49,19 +53,34 @@ where
         &self.running_var
     }
 
+    fn ensure_initialized(&mut self, dim: usize) {
+        if !self.initialized {
+            self.running_mean = vec![0.0; dim];
+            self.running_var = vec![1.0; dim];
+            self.initialized = true;
+        }
+    }
+
     fn normalize(&mut self, obs: E::Observation) -> E::Observation {
         let flat = obs.flatten();
+        self.ensure_initialized(flat.len());
 
         // Welford online update
         self.count += 1.0;
+        for (i, &val) in flat.iter().enumerate() {
+            let delta = val - self.running_mean[i];
+            self.running_mean[i] += delta / self.count;
+            let delta2 = val - self.running_mean[i];
+            self.running_var[i] =
+                (self.running_var[i] + (delta * delta2 - self.running_var[i]) / self.count)
+                    .max(0.0);
+        }
+
+        // Normalize using updated statistics
         let normalized: Vec<f64> = flat
             .iter()
             .enumerate()
             .map(|(i, &val)| {
-                let delta = val - self.running_mean[i];
-                self.running_mean[i] += delta / self.count;
-                let delta2 = val - self.running_mean[i];
-                self.running_var[i] += (delta * delta2 - self.running_var[i]) / self.count;
                 (val - self.running_mean[i]) / (self.running_var[i].sqrt() + self.epsilon)
             })
             .collect();
