@@ -75,6 +75,16 @@ Headless by default — no graphics dependencies. To enable rendering:
 cargo add gymnasia --features render
 ```
 
+### Development
+
+```bash
+just fetch     # fetch dependencies
+just build     # build the project
+just fmt       # format code
+just lint      # run clippy
+just check     # run all CI checks (fmt + lint + test)
+```
+
 ### Headless
 
 ```rust
@@ -88,7 +98,7 @@ println!("reward: {}, terminated: {}", result.reward, result.terminated);
 ```
 
 ```bash
-cargo run --example=cartpole_headless
+cargo run --example=cartpole_headless --no-default-features
 ```
 
 ### With wrappers
@@ -127,7 +137,7 @@ assert_eq!(flat.len(), 4);
 
 ```rust
 use gymnasia::core::Env;
-use gymnasia::render::{render_env::RenderEnv, renderer::RenderMode};
+use gymnasia::render::{RenderEnv, renderer::RenderMode};
 use gymnasia::envs::classical_control::cartpole::CartPoleEnv;
 
 #[macroquad::main("CartPole")]
@@ -257,7 +267,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full list. Key changes:
 | `DiscreteRange` | merged into `Discrete::with_start()` |
 | `RenderEnv` doesn't impl `Env` | `RenderEnv` implements `Env` |
 | No wrappers | 13 composable wrappers |
-| `use gymnasia::render::RenderEnv` | `use gymnasia::render::render_env::RenderEnv` |
+| `use gymnasia::render::RenderEnv` | `use gymnasia::render::RenderEnv` |
 | `use gymnasia::utils::renderer::RenderMode` | `use gymnasia::render::renderer::RenderMode` |
 
 ## History
