@@ -38,11 +38,7 @@ where
     fn step(&mut self, action: Self::Action) -> StepResult<Self::Observation> {
         let space = self.env.action_space();
         let (low, high) = space.bounds();
-        let clamped = if !E::Action::in_bounds(&action, low, high) {
-            low.clone()
-        } else {
-            action
-        };
+        let clamped = E::Action::clamp(action, low, high);
         self.env.step(clamped)
     }
 
