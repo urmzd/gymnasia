@@ -1,11 +1,11 @@
 use crate::core::{Env, StepResult};
 
-use super::Wrapper;
+use super::{AsBoxBounds, Wrapper};
 
 /// Affinely rescales `f64` actions from `[new_low, new_high]` to the
 /// environment's action space bounds.
 ///
-/// Only works with environments whose `Action = f64`.
+/// Requires `E::ActionSpace: AsBoxBounds<f64>` (satisfied by `BoxSpace<f64>`).
 pub struct RescaleAction<E>
 where
     E: Env<Action = f64>,
@@ -20,7 +20,15 @@ where
     E: Env<Action = f64>,
 {
     /// Wrap `env` so actions in `[new_low, new_high]` are rescaled to env bounds.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `new_low >= new_high`.
     pub fn new(env: E, new_low: f64, new_high: f64) -> Self {
+        assert!(
+            new_low < new_high,
+            "RescaleAction requires new_low < new_high, got {new_low} >= {new_high}"
+        );
         Self {
             env,
             new_low,
@@ -32,6 +40,7 @@ where
 impl<E> Env for RescaleAction<E>
 where
     E: Env<Action = f64>,
+    E::ActionSpace: AsBoxBounds<f64>,
 {
     type Action = f64;
     type Observation = E::Observation;
@@ -40,15 +49,10 @@ where
     type ResetOptions = E::ResetOptions;
 
     fn step(&mut self, action: f64) -> StepResult<Self::Observation> {
-        // Rescale: action in [new_low, new_high] → [env_low, env_high]
-        // For now, just pass through — env-specific bounds require BoxSpace introspection
-        // which depends on the action space type. Users needing full rescaling should
-        // use TransformAction with a custom closure.
+        let (env_low, env_high) = self.env.action_space().bounds();
         let t = (action - self.new_low) / (self.new_high - self.new_low);
-        // Without access to env bounds at the trait level, we pass the normalized value.
-        // In practice this wrapper is most useful when combined with BoxSpace<f64> action spaces.
-        let _ = t; // TODO: full rescaling when BoxSpace<f64> action space is detectable
-        self.env.step(action)
+        let rescaled = env_low + t * (env_high - env_low);
+        self.env.step(rescaled)
     }
 
     fn reset(&mut self, seed: Option<u64>, options: Self::ResetOptions) -> Self::Observation {
@@ -69,6 +73,7 @@ where
 impl<E> Wrapper for RescaleAction<E>
 where
     E: Env<Action = f64>,
+    E::ActionSpace: AsBoxBounds<f64>,
 {
     type Inner = E;
     fn inner(&self) -> &E {
