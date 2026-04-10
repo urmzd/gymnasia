@@ -1,9 +1,6 @@
 # Build
 /target
 
-# Dependencies
-Cargo.lock
-
 # Editor/IDE
 .idea/
 .vscode/
