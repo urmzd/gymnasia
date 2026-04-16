@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.0.1 (2026-04-16)
+
+### Bug Fixes
+
+- **ci**: migrate sr v4 to v7 for artifact and input support (#7) ([5765d8f](https://github.com/urmzd/gymnasia/commit/5765d8f1cd472a7dc4ee5956fe53d2d2c2ff27fd))
+
+### Misc
+
+- migrate sr config and action to v4 ([292e565](https://github.com/urmzd/gymnasia/commit/292e565c6b7106dac355f1c67ac5dfc4acda81c4))
+- commit Cargo.lock to fix release pipeline ([061b27d](https://github.com/urmzd/gymnasia/commit/061b27de7d5817a5913e9d88d36ca10555acbf95))
+
+[Full Changelog](https://github.com/urmzd/gymnasia/compare/v3.0.0...v3.0.1)
+
+
 ## 3.0.0 (2026-04-09)
 
 ### Breaking Changes
