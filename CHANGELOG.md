@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.2 (2026-04-16)
+
+### Refactoring
+
+- replace embed-src references with fsrc (#8) ([08e5c0c](https://github.com/urmzd/gymnasia/commit/08e5c0cc61ca5d838c8af68ff52c7df3d4acb5af))
+
+[Full Changelog](https://github.com/urmzd/gymnasia/compare/v3.0.1...v3.0.2)
+
+
 ## 3.0.1 (2026-04-16)
 
 ### Bug Fixes
