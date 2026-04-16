@@ -240,7 +240,7 @@ Implement `Bounded` on any type to use it with `BoxSpace`. We ship implementatio
 
 ## Benchmarks
 
-<!-- embed-src src="benches/RESULTS.md" -->
+<!-- fsrc src="benches/RESULTS.md" -->
 | Benchmark | Time (median) |
 |-----------|---------------|
 | `cartpole/step` | ~26 ns |
@@ -251,7 +251,7 @@ Implement `Bounded` on any type to use it with `BoxSpace`. We ship implementatio
 | `mountain_car/episode` | ~4.6 us |
 
 > Apple M3 Pro — `cargo bench` via [Criterion](https://github.com/bheisler/criterion.rs). Run `cargo bench` to reproduce.
-<!-- /embed-src -->
+<!-- /fsrc -->
 
 ## Migrating from v2
 
