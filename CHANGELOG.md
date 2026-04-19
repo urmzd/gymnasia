@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.5 (2026-04-19)
+
+### Bug Fixes
+
+- retrigger release with sr v7.1.2 Cargo.lock handling ([23ccdaa](https://github.com/urmzd/gymnasia/commit/23ccdaa3b9605d9efa720df3c238030a2853780e))
+
+[Full Changelog](https://github.com/urmzd/gymnasia/compare/v3.0.4...v3.0.5)
+
+
 ## 3.0.4 (2026-04-19)
 
 ### Bug Fixes
