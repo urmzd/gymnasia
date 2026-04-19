@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.3 (2026-04-19)
+
+### Refactoring
+
+- move cargo publish into sr hooks.post_release ([9ea7444](https://github.com/urmzd/gymnasia/commit/9ea74442b273b57108dc14d41acb7725b1198d81))
+
+[Full Changelog](https://github.com/urmzd/gymnasia/compare/v3.0.2...v3.0.3)
+
+
 ## 3.0.2 (2026-04-16)
 
 ### Refactoring
