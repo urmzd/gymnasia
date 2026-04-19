@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.0.4 (2026-04-19)
+
+### Bug Fixes
+
+- **ci**: stage Cargo.lock in release commit ([acb8b87](https://github.com/urmzd/gymnasia/commit/acb8b871220497f9c948def80542a588ca8c4234))
+
+[Full Changelog](https://github.com/urmzd/gymnasia/compare/v3.0.3...v3.0.4)
+
+
 ## 3.0.3 (2026-04-19)
 
 ### Refactoring
