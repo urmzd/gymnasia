@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     steps:
       - name: Generate app token
         id: app-token
@@ -38,28 +39,6 @@ jobs:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
 
-      - uses: urmzd/sr@v7
-        id: sr
-        with:
-          github-token: ${{ steps.app-token.outputs.token }}
-          force: ${{ inputs.force || false }}
-
-    outputs:
-      released: ${{ steps.sr.outputs.released }}
-      version: ${{ steps.sr.outputs.version }}
-
-  publish:
-    needs: release
-    if: needs.release.outputs.released == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: v${{ needs.release.outputs.version }}
-
       - uses: dtolnay/rust-toolchain@stable
 
       - uses: Swatinem/rust-cache@v2
@@ -68,7 +47,10 @@ jobs:
         id: auth
         uses: rust-lang/crates-io-auth-action@v1
 
-      - name: Publish to crates.io
+      - uses: urmzd/sr@v7
+        id: sr
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
-        run: cargo publish
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          force: ${{ inputs.force || false }}
