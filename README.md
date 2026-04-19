@@ -15,6 +15,8 @@
   <a href="https://github.com/urmzd/gymnasia/actions/workflows/ci.yml"><img src="https://github.com/urmzd/gymnasia/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://crates.io/crates/gymnasia"><img src="https://img.shields.io/crates/v/gymnasia" alt="crates.io"></a>
   <a href="https://docs.rs/gymnasia"><img src="https://img.shields.io/docsrs/gymnasia" alt="docs.rs"></a>
+  &nbsp;
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/urmzd/gymnasia" alt="License"></a>
 </p>
 
 ## Showcase
@@ -40,6 +42,20 @@
     </td>
   </tr>
 </table>
+
+## Contents
+
+- [Architecture](#architecture)
+- [Quick Start](#quick-start)
+- [Wrappers](#wrappers)
+- [Spaces](#spaces)
+- [Feature Flags](#feature-flags)
+- [Benchmarks](#benchmarks)
+- [Migrating from v2](#migrating-from-v2)
+- [History](#history)
+- [Contributing](#contributing)
+- [Agent Skill](#agent-skill)
+- [License](#license)
 
 ## Architecture
 
