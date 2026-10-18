@@ -60,24 +60,24 @@
 ## Architecture
 
 Unlike Python Gymnasium, gymnasia **separates simulation from rendering** and
-uses **pure-Rust dependencies only** — no C bindings, no SDL2, no system library
+uses **pure-Rust dependencies only**: no C bindings, no SDL2, no system library
 installation.
 
 | Layer | What it does | Feature gate |
 |-------|-------------|--------------|
-| `Env` trait | Pure physics — `step()`, `reset()` | Always compiled |
+| `Env` trait | Pure physics: `step()`, `reset()` | Always compiled |
 | `Renderable` trait | Produces a `DrawList` (backend-agnostic draw commands) | Always compiled |
 | `Wrapper` trait | Composable behavior wrappers (`TimeLimit`, `NormalizeObservation`, etc.) | Always compiled |
 | `Screen` | Translates `DrawList` into graphics calls (macroquad) | `render` feature |
-| `RenderEnv<E>` | Wraps `Env + Renderable` with a `Screen` — implements `Env` | `render` feature |
+| `RenderEnv<E>` | Wraps `Env + Renderable` with a `Screen`; implements `Env` | `render` feature |
 
 ### Design decisions
 
-- **`Env` has zero supertraits** — no `Clone + Debug + Serialize`. Wrappers with closures work.
-- **Wrappers own their data** — no info dict. `RecordEpisodeStatistics` exposes `episode_return()`, `TimeLimit` exposes `steps_remaining()`.
-- **`BoxSpace<B: Bounded>`** — generic over the bounds representation. Implement `Bounded` on your own types.
-- **`Flatten` is opt-in** — bidirectional `flatten()`/`unflatten()` for ML pipelines. Not required by `Env`.
-- **`StepResult` uses `f64` reward** — `O64` stays internal.
+- **`Env` has zero supertraits**: no `Clone + Debug + Serialize`. Wrappers with closures work.
+- **Wrappers own their data**: no info dict. `RecordEpisodeStatistics` exposes `episode_return()`, `TimeLimit` exposes `steps_remaining()`.
+- **`BoxSpace<B: Bounded>`**: generic over the bounds representation. Implement `Bounded` on your own types.
+- **`Flatten` is opt-in**: bidirectional `flatten()`/`unflatten()` for ML pipelines. Not required by `Env`.
+- **`StepResult` uses `f64` reward**: `O64` stays internal.
 
 ## Quick Start
 
@@ -85,7 +85,7 @@ installation.
 cargo add gymnasia
 ```
 
-Headless by default — no graphics dependencies. To enable rendering:
+Headless by default: no graphics dependencies. To enable rendering:
 
 ```bash
 cargo add gymnasia --features render
@@ -235,7 +235,7 @@ Wrappers are generic structs that implement `Env` by delegating to an inner envi
 | `NormalizeObservation` | Observation | Running mean/variance normalization |
 | `TransformObservation` | Observation | Apply custom function, may change type |
 
-Wrappers that track metadata expose it via typed methods on the wrapper itself — there is no dynamic info dict.
+Wrappers that track metadata expose it via typed methods on the wrapper itself. There is no dynamic info dict.
 
 ## Spaces
 
@@ -277,7 +277,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full list. Key changes:
 |----|-----|
 | `ActionReward<T, E>` | `StepResult<O>` |
 | `reward: O64` | `reward: f64` |
-| `info: Option<E>` | removed — wrappers own their data |
+| `info: Option<E>` | removed (wrappers own their data) |
 | `reset(seed, return_info, options)` | `reset(seed, options)` returns `Observation` |
 | `BoxR<T>` | `BoxSpace<B: Bounded>` |
 | `Observation: Into<Vec<f64>>` required | `Flatten` trait (opt-in) |
@@ -294,7 +294,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full list. Key changes:
 Gymnasia is a fork of
 [MathisWellmann/gym-rs](https://github.com/MathisWellmann/gym-rs), which is no
 longer actively maintained. OpenAI Gym itself has since evolved into
-[Gymnasium](https://github.com/Farama-Foundation/Gymnasium) — gymnasia tracks
+[Gymnasium](https://github.com/Farama-Foundation/Gymnasium), and gymnasia tracks
 that direction for Rust. See [docs/roadmap.md](./docs/roadmap.md) for feature parity status.
 
 ## Contributing
