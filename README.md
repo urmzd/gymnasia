@@ -264,9 +264,9 @@ Implement `Bounded` on any type to use it with `BoxSpace`. We ship implementatio
 | `cartpole/episode` | ~248 ns |
 | `mountain_car/step` | ~25 ns |
 | `mountain_car/reset` | ~15 ns |
-| `mountain_car/episode` | ~4.6 us |
+| `mountain_car/episode` | ~4.6 µs |
 
-> Apple M3 Pro — `cargo bench` via [Criterion](https://github.com/bheisler/criterion.rs). Run `cargo bench` to reproduce.
+> Apple M3 Pro, `cargo bench` via [Criterion](https://github.com/bheisler/criterion.rs). Run `cargo bench` to reproduce.
 <!-- /fsrc -->
 
 ## Migrating from v2
