@@ -3,7 +3,7 @@
   <p align="center">
     OpenAI Gymnasium environments in pure Rust.
     <br /><br />
-    <a href="https://github.com/urmzd/gymnasia/releases">Install</a>
+    <a href="#installation">Install</a>
     &middot;
     <a href="https://github.com/urmzd/gymnasia/issues">Report Bug</a>
     &middot;
@@ -13,71 +13,60 @@
 
 <p align="center">
   <a href="https://github.com/urmzd/gymnasia/actions/workflows/ci.yml"><img src="https://github.com/urmzd/gymnasia/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  &nbsp;
   <a href="https://crates.io/crates/gymnasia"><img src="https://img.shields.io/crates/v/gymnasia" alt="crates.io"></a>
-  <a href="https://docs.rs/gymnasia"><img src="https://img.shields.io/docsrs/gymnasia" alt="docs.rs"></a>
   &nbsp;
   <a href="LICENSE"><img src="https://img.shields.io/github/license/urmzd/gymnasia" alt="License"></a>
 </p>
 
-## Showcase
-
-<table align="center">
-  <tr>
-    <td align="center">
-      <img src="showcase/cartpole.gif" alt="CartPole" width="300" />
-      <br />
-      <sub><b>CartPole</b></sub>
-    </td>
-    <td align="center">
-      <img src="showcase/mountain-car.gif" alt="MountainCar" width="300" />
-      <br />
-      <sub><b>MountainCar</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" colspan="2">
-      <img src="showcase/cartpole-headless.gif" alt="CartPole (headless)" width="300" />
-      <br />
-      <sub><b>CartPole (headless)</b></sub>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="showcase/cartpole.gif" alt="CartPole" width="30%"> &nbsp; <img src="showcase/mountain-car.gif" alt="MountainCar" width="30%"> &nbsp; <img src="showcase/cartpole-headless.gif" alt="CartPole (headless)" width="30%">
+</p>
+<p align="center"><em>CartPole &middot; MountainCar &middot; CartPole (headless)</em></p>
 
 ## Contents
 
-- [Architecture](#architecture)
+- [Features](#features)
+- [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Wrappers](#wrappers)
-- [Spaces](#spaces)
-- [Feature Flags](#feature-flags)
-- [Benchmarks](#benchmarks)
-- [Migrating from v2](#migrating-from-v2)
-- [History](#history)
-- [Contributing](#contributing)
+- [Examples](#examples)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [API](#api)
+- [Development](#development)
+- [Documentation](#documentation)
 - [Agent Skill](#agent-skill)
 - [License](#license)
 
-## Architecture
+## Features
 
-Unlike Python Gymnasium, gymnasia **separates simulation from rendering** and
-uses **pure-Rust dependencies only**: no C bindings, no SDL2, no system library
-installation.
+- **Pure Rust**: no C bindings, no SDL2, no system libraries to install.
+- **Headless by default**: simulation compiles with zero graphics dependencies; rendering is opt-in behind the `render` feature.
+- **Classic control environments**: CartPole and MountainCar.
+- **13 composable wrappers**: time limits, autoreset, reward and observation normalization, action clipping and rescaling, custom transforms.
+- **Typed wrapper data**: wrappers expose metadata through methods such as `episode_return()` and `steps_remaining()`, not an info dict.
+- **Generic spaces**: `BoxSpace<B: Bounded>` works with your own observation types.
+- **Opt-in flattening**: `Flatten` converts observations to and from `Vec<f64>` for ML pipelines.
 
-| Layer | What it does | Feature gate |
-|-------|-------------|--------------|
-| `Env` trait | Pure physics: `step()`, `reset()` | Always compiled |
-| `Renderable` trait | Produces a `DrawList` (backend-agnostic draw commands) | Always compiled |
-| `Wrapper` trait | Composable behavior wrappers (`TimeLimit`, `NormalizeObservation`, etc.) | Always compiled |
-| `Screen` | Translates `DrawList` into graphics calls (macroquad) | `render` feature |
-| `RenderEnv<E>` | Wraps `Env + Renderable` with a `Screen`; implements `Env` | `render` feature |
+## Installation
 
-### Design decisions
+### Prerequisites
 
-- **`Env` has zero supertraits**: no `Clone + Debug + Serialize`. Wrappers with closures work.
-- **Wrappers own their data**: no info dict. `RecordEpisodeStatistics` exposes `episode_return()`, `TimeLimit` exposes `steps_remaining()`.
-- **`BoxSpace<B: Bounded>`**: generic over the bounds representation. Implement `Bounded` on your own types.
-- **`Flatten` is opt-in**: bidirectional `flatten()`/`unflatten()` for ML pipelines. Not required by `Env`.
-- **`StepResult` uses `f64` reward**: `O64` stays internal.
+| Requirement | Version |
+|-------------|---------|
+| [Rust](https://rustup.rs/) | 1.82.0+ (2021 edition) |
+
+Add the crate (headless):
+
+```bash
+cargo add gymnasia
+```
+
+Add it with window rendering:
+
+```bash
+cargo add gymnasia --features render
+```
 
 ## Quick Start
 
@@ -85,39 +74,69 @@ installation.
 cargo add gymnasia
 ```
 
-Headless by default: no graphics dependencies. To enable rendering:
-
-```bash
-cargo add gymnasia --features render
-```
-
-### Development
-
-```bash
-just fetch     # fetch dependencies
-just build     # build the project
-just fmt       # format code
-just lint      # run clippy
-just check     # run all CI checks (fmt + lint + test)
-```
-
-### Headless
-
+<!-- fsrc src="examples/cartpole_headless.rs" fence="auto" -->
 ```rust
-use gymnasia::core::Env;
-use gymnasia::envs::classical_control::cartpole::CartPoleEnv;
+use gymnasia::{core::Env, envs::classical_control::cartpole::CartPoleEnv};
+use rand::{thread_rng, Rng};
 
-let mut env = CartPoleEnv::new();
-env.reset(None, None);
-let result = env.step(1); // 0 = left, 1 = right
-println!("reward: {}, terminated: {}", result.reward, result.terminated);
+/// Runs cartpole training in headless mode (no rendering).
+///
+/// This example works without the `render` feature, demonstrating
+/// that the core simulation has zero graphics dependencies.
+fn main() {
+    let mut env = CartPoleEnv::new();
+    env.reset(None, None);
+
+    const N: usize = 15;
+    let mut rewards = Vec::with_capacity(N);
+
+    let mut rng = thread_rng();
+    for _ in 0..N {
+        let mut current_reward = 0.0_f64;
+
+        for _ in 0..475 {
+            let action: i64 = rng.gen_range(0..=1);
+            let state_reward = env.step(action);
+            current_reward += state_reward.reward;
+
+            if state_reward.terminated {
+                break;
+            }
+        }
+
+        env.reset(None, None);
+        rewards.push(current_reward);
+    }
+
+    println!("{:?}", rewards);
+}
 ```
+<!-- /fsrc -->
 
 ```bash
 cargo run --example=cartpole_headless --no-default-features
 ```
 
-### With wrappers
+See [`examples/`](examples/) for more.
+
+## Examples
+
+| Example | Description |
+|---------|-------------|
+| [`cartpole_headless`](examples/cartpole_headless.rs) | Random-action CartPole episodes with no graphics dependencies |
+| [`cartpole`](examples/cartpole.rs) | CartPole in a window (requires `render`) |
+| [`mountain_car`](examples/mountain_car.rs) | MountainCar in a window (requires `render`) |
+
+```bash
+cargo run --example=cartpole --features render
+cargo run --example=mountain_car --features render
+```
+
+## Usage
+
+### Stack wrappers
+
+Wrap an environment to compose behaviors. Read wrapper data through typed methods:
 
 ```rust
 use gymnasia::core::Env;
@@ -132,12 +151,11 @@ let mut env = RecordEpisodeStatistics::new(env);
 let obs = env.reset(None, None);
 let result = env.step(1);
 
-// Typed access to wrapper data:
 println!("return: {}", env.episode_return());
 println!("steps left: {}", env.inner().steps_remaining());
 ```
 
-### Flatten for ML
+### Flatten observations for ML
 
 ```rust
 use gymnasia::core::{Env, Flatten};
@@ -149,7 +167,9 @@ let flat: Vec<f64> = obs.flatten();   // [x, x_dot, theta, theta_dot]
 assert_eq!(flat.len(), 4);
 ```
 
-### With rendering
+### Render
+
+Enable the `render` feature and wrap the environment in `RenderEnv`, which also implements `Env`:
 
 ```rust
 use gymnasia::core::Env;
@@ -169,22 +189,19 @@ async fn main() {
 }
 ```
 
-```bash
-cargo run --example=cartpole --features render
-cargo run --example=mountain_car --features render
-```
+To make your own environment renderable, implement `Renderable` and return a `DrawList` of backend-agnostic draw commands.
 
-### Custom environment
+### Write a custom environment
+
+Implement `Bounded` on your observation type so it works with `BoxSpace`, then implement `Env`. `Env` has no supertraits, so environments holding closures work.
 
 ```rust
 use gymnasia::core::{Env, StepResult};
 use gymnasia::spaces::{Bounded, BoxSpace, Discrete};
 
-// 1. Define your observation type
 #[derive(Clone, Debug)]
 struct MyObs { x: f64, y: f64 }
 
-// 2. Implement Bounded so it works with BoxSpace
 impl Bounded for MyObs {
     fn in_bounds(v: &Self, lo: &Self, hi: &Self) -> bool {
         v.x >= lo.x && v.x <= hi.x && v.y >= lo.y && v.y <= hi.y
@@ -197,27 +214,54 @@ impl Bounded for MyObs {
     }
 }
 
-// 3. Implement Env
 struct MyEnv { /* ... */ }
+
 impl Env for MyEnv {
     type Action = i64;
     type Observation = MyObs;
     type ActionSpace = Discrete;
     type ObservationSpace = BoxSpace<MyObs>;
     type ResetOptions = ();
-    // ...
-#   fn step(&mut self, _: i64) -> StepResult<MyObs> { todo!() }
-#   fn reset(&mut self, _: Option<u64>, _: ()) -> MyObs { todo!() }
-#   fn action_space(&self) -> &Discrete { todo!() }
-#   fn observation_space(&self) -> &BoxSpace<MyObs> { todo!() }
+
+    fn step(&mut self, _: i64) -> StepResult<MyObs> { todo!() }
+    fn reset(&mut self, _: Option<u64>, _: ()) -> MyObs { todo!() }
+    fn action_space(&self) -> &Discrete { todo!() }
+    fn observation_space(&self) -> &BoxSpace<MyObs> { todo!() }
 }
 ```
 
-Full API documentation is available on [docs.rs](https://docs.rs/gymnasia).
+### Migrate from v2
 
-## Wrappers
+See [CHANGELOG.md](CHANGELOG.md) for the full list. Key changes:
 
-Wrappers are generic structs that implement `Env` by delegating to an inner environment. Stack them to compose behaviors:
+| v2 | v3 |
+|----|-----|
+| `ActionReward<T, E>` | `StepResult<O>` |
+| `reward: O64` | `reward: f64` |
+| `info: Option<E>` | removed (wrappers own their data) |
+| `reset(seed, return_info, options)` | `reset(seed, options)` returns `Observation` |
+| `BoxR<T>` | `BoxSpace<B: Bounded>` |
+| `Observation: Into<Vec<f64>>` required | `Flatten` trait (opt-in) |
+| `Clone + Debug + Serialize` on `Env` | no supertraits |
+| `Discrete(usize)` | `Discrete { n, start }` with `i64` element |
+| `DiscreteRange` | merged into `Discrete::with_start()` |
+| `RenderEnv` doesn't impl `Env` | `RenderEnv` implements `Env` |
+| No wrappers | 13 composable wrappers |
+| `use gymnasia::utils::renderer::RenderMode` | `use gymnasia::render::renderer::RenderMode` |
+
+## Configuration
+
+| Feature | Default | Description |
+|---------|---------|-------------|
+| `render` | No | macroquad-based window rendering and pixel capture |
+
+## API
+
+Full API documentation is on [docs.rs](https://docs.rs/gymnasia).
+
+### Wrappers
+
+Each wrapper is a generic struct that implements `Env` by delegating to an inner environment.
 
 | Wrapper | Category | What it does |
 |---------|----------|-------------|
@@ -235,26 +279,28 @@ Wrappers are generic structs that implement `Env` by delegating to an inner envi
 | `NormalizeObservation` | Observation | Running mean/variance normalization |
 | `TransformObservation` | Observation | Apply custom function, may change type |
 
-Wrappers that track metadata expose it via typed methods on the wrapper itself. There is no dynamic info dict.
-
-## Spaces
+### Spaces
 
 | Space | Element | Description |
 |-------|---------|-------------|
-| `BoxSpace<B: Bounded>` | `B` | Continuous bounded space. Generic over bounds type. |
-| `Discrete` | `i64` | `{start, ..., start+n-1}`. Supports action masking. |
-| `MultiDiscrete` | `Vec<i64>` | Cartesian product of discrete spaces. |
-| `MultiBinary` | `Vec<u8>` | `{0, 1}^n`. |
+| `BoxSpace<B: Bounded>` | `B` | Continuous bounded space, generic over bounds type |
+| `Discrete` | `i64` | `{start, ..., start+n-1}`, supports action masking |
+| `MultiDiscrete` | `Vec<i64>` | Cartesian product of discrete spaces |
+| `MultiBinary` | `Vec<u8>` | `{0, 1}^n` |
 
-Implement `Bounded` on any type to use it with `BoxSpace`. We ship implementations for `f64`, `f32`, and `Tensor` (flat `Vec<f64>` with shape metadata for high-dimensional spaces like images).
+`Bounded` ships for `f64`, `f32`, and `Tensor` (flat `Vec<f64>` with shape metadata for high-dimensional spaces like images). `StepResult` reports reward as `f64`.
 
-## Feature Flags
+## Development
 
-| Feature | Default | Description |
-|---------|---------|-------------|
-| `render` | No | macroquad-based window rendering and pixel capture |
+```bash
+just fetch     # fetch dependencies
+just build     # build the project
+just fmt       # format code
+just lint      # run clippy
+just check     # run all CI checks (fmt + lint + test)
+```
 
-## Benchmarks
+### Benchmarks
 
 <!-- fsrc src="benches/RESULTS.md" -->
 | Benchmark | Time (median) |
@@ -269,37 +315,13 @@ Implement `Bounded` on any type to use it with `BoxSpace`. We ship implementatio
 > Apple M3 Pro, `cargo bench` via [Criterion](https://github.com/bheisler/criterion.rs). Run `cargo bench` to reproduce.
 <!-- /fsrc -->
 
-## Migrating from v2
+## Documentation
 
-See [CHANGELOG.md](./CHANGELOG.md) for the full list. Key changes:
-
-| v2 | v3 |
-|----|-----|
-| `ActionReward<T, E>` | `StepResult<O>` |
-| `reward: O64` | `reward: f64` |
-| `info: Option<E>` | removed (wrappers own their data) |
-| `reset(seed, return_info, options)` | `reset(seed, options)` returns `Observation` |
-| `BoxR<T>` | `BoxSpace<B: Bounded>` |
-| `Observation: Into<Vec<f64>>` required | `Flatten` trait (opt-in) |
-| `Clone + Debug + Serialize` on `Env` | no supertraits |
-| `Discrete(usize)` | `Discrete { n, start }` with `i64` element |
-| `DiscreteRange` | merged into `Discrete::with_start()` |
-| `RenderEnv` doesn't impl `Env` | `RenderEnv` implements `Env` |
-| No wrappers | 13 composable wrappers |
-| `use gymnasia::render::RenderEnv` | `use gymnasia::render::RenderEnv` |
-| `use gymnasia::utils::renderer::RenderMode` | `use gymnasia::render::renderer::RenderMode` |
-
-## History
-
-Gymnasia is a fork of
-[MathisWellmann/gym-rs](https://github.com/MathisWellmann/gym-rs), which is no
-longer actively maintained. OpenAI Gym itself has since evolved into
-[Gymnasium](https://github.com/Farama-Foundation/Gymnasium), and gymnasia tracks
-that direction for Rust. See [docs/roadmap.md](./docs/roadmap.md) for feature parity status.
-
-## Contributing
-
-Contributions are welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+- [Usage guide](docs/usage.md)
+- [Gymnasium compliance](docs/compliance.md)
+- [Roadmap](docs/roadmap.md)
+- [Changelog](CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md)
 
 ## Agent Skill
 
@@ -307,4 +329,4 @@ This repo's conventions are available as portable agent skills in [`skills/`](sk
 
 ## License
 
-Licensed under [Apache 2.0](./LICENSE).
+Licensed under [Apache 2.0](LICENSE). Forked from [MathisWellmann/gym-rs](https://github.com/MathisWellmann/gym-rs).
