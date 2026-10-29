@@ -317,9 +317,9 @@ just check     # run all CI checks (fmt + lint + test)
 
 ## Documentation
 
-- [Usage guide](docs/usage.md)
-- [Gymnasium compliance](docs/compliance.md)
-- [Roadmap](docs/roadmap.md)
+- [Usage guide](docs/guides/usage.md)
+- [Gymnasium compliance](docs/reference/compliance.md)
+- [Roadmap](docs/plans/roadmap.md)
 - [Changelog](CHANGELOG.md)
 - [Contributing](CONTRIBUTING.md)
 
