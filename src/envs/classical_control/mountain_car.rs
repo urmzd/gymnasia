@@ -1,4 +1,3 @@
-use derivative::Derivative;
 use num_traits::Float;
 use ordered_float::OrderedFloat;
 use rand::Rng;
@@ -21,8 +20,7 @@ use crate::{
 /// An episode ends when one of the following conditions occur:
 ///     1. Termination: The car reaches the goal position.
 ///     2. Truncation: The episode exceeds 200 steps.
-#[derive(Serialize, Derivative, Clone)]
-#[derivative(Debug)]
+#[derive(Serialize, Clone)]
 pub struct MountainCarEnv {
     /// The minimum position the car can be spawned at.
     pub min_position: O64,
@@ -49,8 +47,24 @@ pub struct MountainCarEnv {
     pub state: MountainCarObservation,
 
     #[serde(skip_serializing)]
-    #[derivative(Debug = "ignore")]
     rand_random: Pcg64,
+}
+
+impl std::fmt::Debug for MountainCarEnv {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MountainCarEnv")
+            .field("min_position", &self.min_position)
+            .field("max_position", &self.max_position)
+            .field("max_speed", &self.max_speed)
+            .field("goal_position", &self.goal_position)
+            .field("goal_velocity", &self.goal_velocity)
+            .field("force", &self.force)
+            .field("gravity", &self.gravity)
+            .field("action_space", &self.action_space)
+            .field("observation_space", &self.observation_space)
+            .field("state", &self.state)
+            .finish_non_exhaustive()
+    }
 }
 
 /// Screen dimensions for MountainCar rendering.
