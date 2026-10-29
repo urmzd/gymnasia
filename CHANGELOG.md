@@ -1,5 +1,26 @@
 # Changelog
 
+## 3.0.6 (2026-10-29)
+
+### Bug Fixes
+
+- **deps**: patch vulnerable dependencies (#13) ([7153911](https://github.com/urmzd/gymnasia/commit/71539114d665783b92751eebd8451adab0b44335))
+
+### Misc
+
+- move docs into the scaffold-docs layout (#12) ([d38d6bc](https://github.com/urmzd/gymnasia/commit/d38d6bc808336bb12046e0237ffa1a73f155d154))
+- align README with standalone structure ([1fbd7c1](https://github.com/urmzd/gymnasia/commit/1fbd7c1f6b24fed9d089f5520ed9ba869553ccc8))
+- **release**: read the sr-releaser key from the release environment (#10) ([3457ec5](https://github.com/urmzd/gymnasia/commit/3457ec5f78c8dcf57596f6040aa8863468fb0251))
+- upgrade urmzd/sr action to v9 (#9) ([9d1fb14](https://github.com/urmzd/gymnasia/commit/9d1fb14278ebe92dc56fefef1965400748d154d2))
+- bump GitHub Actions to Node 24 majors and switch app token to client-id ([7e1cb4d](https://github.com/urmzd/gymnasia/commit/7e1cb4d3da14beb2dfd46c2a364c619081613218))
+- **ci**: bump sr to v8, convert post_release hook to typed cargo publisher ([2ab4ea0](https://github.com/urmzd/gymnasia/commit/2ab4ea0fbff8bf083e3a274f260c017f93f604a8))
+- **ci**: remove unused force input from release workflow ([3867f1d](https://github.com/urmzd/gymnasia/commit/3867f1d4feadf8086109a8cdbe74bc39ada53584))
+- **community**: add GitHub community-health files ([3cdb9b8](https://github.com/urmzd/gymnasia/commit/3cdb9b86bf3ed5f67d3ce58f57b312bfb3101af7))
+- **fix**: standardize README format ([c77d9d5](https://github.com/urmzd/gymnasia/commit/c77d9d59dc7bef063d5f8e24341c53bcbbf8eb20))
+
+[Full Changelog](https://github.com/urmzd/gymnasia/compare/v3.0.5...v3.0.6)
+
+
 ## 3.0.5 (2026-04-19)
 
 ### Bug Fixes
